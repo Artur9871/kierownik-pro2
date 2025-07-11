@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KIEROWNIK PRO - Edytor Projektów</title>
+    <title>KIEROWNIK PRO - Timer Pracy</title>
     <style>
         * {
             margin: 0;
@@ -20,7 +20,7 @@
         }
         
         .container {
-            max-width: 1000px;
+            max-width: 800px;
             margin: 0 auto;
         }
         
@@ -44,88 +44,47 @@
             font-size: 16px;
         }
         
-        .nav-tabs {
-            display: flex;
-            background: rgba(255,255,255,0.15);
-            border-radius: 15px;
-            margin-bottom: 20px;
-            padding: 5px;
-            gap: 5px;
-        }
-        
-        .nav-tab {
-            flex: 1;
-            padding: 15px;
-            background: rgba(255,255,255,0.3);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-tab.active {
+        .timer-card {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .card {
-            background: rgba(255,255,255,0.95);
-            padding: 25px;
+            color: white;
+            padding: 30px;
             border-radius: 15px;
             margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
         }
         
-        .card h3 {
-            color: #2d3748;
+        .timer-card h2 {
+            font-size: 24px;
             margin-bottom: 20px;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            opacity: 0.9;
         }
         
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+        .current-task {
+            font-size: 18px;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+        
+        .current-task-name {
+            font-size: 22px;
+            font-weight: bold;
             margin-bottom: 20px;
         }
         
-        .form-group {
+        .timer-display {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .controls {
             display: flex;
-            flex-direction: column;
-        }
-        
-        .form-group label {
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
-        .form-group input, .form-group select, .form-group textarea {
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-        
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: #4facfe;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
         }
         
         .btn {
@@ -136,22 +95,26 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-right: 10px;
-            margin-bottom: 10px;
+            min-width: 120px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
+            background: rgba(255,255,255,0.9);
+            color: #2d3748;
         }
         
         .btn-success {
             background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
-            color: white;
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
         
@@ -160,97 +123,167 @@
             color: white;
         }
         
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        .task-selector {
+            background: rgba(255,255,255,0.95);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
         }
         
-        .task-list {
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            max-height: 400px;
-            overflow-y: auto;
+        .task-selector h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 20px;
         }
         
-        .task-item {
+        .selector-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            grid-template-columns: 1fr;
             gap: 15px;
-            padding: 15px;
-            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .selector-row {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 15px;
             align-items: center;
-            background: white;
         }
         
-        .task-item:last-child {
-            border-bottom: none;
-        }
-        
-        .task-item.header {
-            background: #f8fafc;
+        .selector-label {
             font-weight: 600;
             color: #2d3748;
-            border-bottom: 2px solid #e2e8f0;
-        }
-        
-        .task-name {
-            font-weight: 500;
-        }
-        
-        .task-type {
-            font-size: 12px;
-            padding: 4px 8px;
-            border-radius: 20px;
-            text-align: center;
-            font-weight: 600;
-        }
-        
-        .task-type.fixed {
-            background: #fef3c7;
-            color: #d97706;
-        }
-        
-        .task-type.area {
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-        
-        .task-rate input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
+            min-width: 100px;
             font-size: 14px;
         }
         
-        .task-estimate {
-            font-weight: 600;
-            color: #4facfe;
-            text-align: center;
+        .task-selector select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            color: #2d3748;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
         }
         
-        .task-actions {
-            display: flex;
-            gap: 5px;
+        .task-selector select:focus {
+            outline: none;
+            border-color: #4facfe;
         }
         
-        .btn-small {
-            padding: 6px 12px;
-            font-size: 12px;
-            border-radius: 6px;
+        .task-selector select:disabled {
+            background: #f7fafc;
+            color: #a0aec0;
+            cursor: not-allowed;
         }
         
-        .project-summary {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            padding: 20px;
+        .task-path {
+            background: #f7fafc;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #4facfe;
+            font-size: 14px;
+            color: #2d3748;
+        }
+        
+        .task-path-item {
+            display: inline;
+            font-weight: 500;
+        }
+        
+        .task-path-separator {
+            margin: 0 8px;
+            color: #718096;
+        }
+        
+        .history-card {
+            background: rgba(255,255,255,0.95);
+            padding: 25px;
             border-radius: 15px;
-            margin-top: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .history-card h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .history-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .history-item.current {
+            background: #e0f2fe;
+            border-left-color: #56ab2f;
+        }
+        
+        .history-item.current .task-status {
+            color: #56ab2f;
+            font-weight: 600;
+        }
+        
+        .task-info {
+            flex: 1;
+        }
+        
+        .task-name {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+        
+        .task-time {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .task-category {
+            color: #4facfe;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        
+        .task-duration {
+            color: #4facfe;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .task-status {
+            color: #16a34a;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .summary-card {
+            background: rgba(255,255,255,0.95);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
         }
         
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 20px;
             margin-top: 15px;
         }
@@ -258,178 +291,79 @@
         .summary-item {
             text-align: center;
             padding: 15px;
-            background: rgba(255,255,255,0.2);
+            background: #f8fafc;
             border-radius: 10px;
         }
         
         .summary-label {
+            color: #718096;
             font-size: 14px;
-            opacity: 0.8;
             margin-bottom: 5px;
         }
         
         .summary-value {
+            color: #2d3748;
             font-size: 24px;
             font-weight: bold;
         }
         
-        .projects-list {
-            display: grid;
-            gap: 15px;
+        .summary-value.primary {
+            color: #4facfe;
         }
         
-        .project-card {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 20px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .project-card:hover {
-            border-color: #4facfe;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.2);
-        }
-        
-        .project-card.active {
-            border-color: #56ab2f;
-            background: #f0fdf4;
-        }
-        
-        .project-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-        }
-        
-        .project-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 5px;
-        }
-        
-        .project-client {
-            font-size: 14px;
-            color: #718096;
-        }
-        
-        .project-status {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .status-active {
-            background: #dcfce7;
+        .summary-value.success {
             color: #16a34a;
         }
         
-        .status-ready {
-            background: #dbeafe;
-            color: #1d4ed8;
+        .summary-value.warning {
+            color: #f59e0b;
+        }
+        
+        .export-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .no-data {
+            text-align: center;
+            color: #718096;
+            font-style: italic;
+            padding: 20px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-running {
+            background: #56ab2f;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-paused {
+            background: #f59e0b;
         }
         
         .status-completed {
-            background: #f3f4f6;
-            color: #6b7280;
+            background: #16a34a;
         }
         
-        .project-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .project-stat {
-            text-align: center;
-            padding: 10px;
-            background: #f8fafc;
-            border-radius: 8px;
-        }
-        
-        .project-stat-label {
-            font-size: 12px;
-            color: #718096;
-            margin-bottom: 2px;
-        }
-        
-        .project-stat-value {
-            font-size: 16px;
-            font-weight: 600;
-            color: #2d3748;
-        }
-        
-        .project-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .templates-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        
-        .template-card {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 20px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .template-card:hover {
-            border-color: #4facfe;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.2);
-        }
-        
-        .template-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 10px;
-        }
-        
-        .template-description {
-            color: #718096;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-        
-        .template-stats {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #4facfe;
-            font-weight: 600;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #4facfe;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            z-index: 1000;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-        
-        .notification.show {
-            transform: translateX(0);
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
         
         @media (max-width: 768px) {
@@ -437,27 +371,37 @@
                 padding: 10px;
             }
             
-            .nav-tabs {
+            .timer-display {
+                font-size: 36px;
+            }
+            
+            .controls {
                 flex-direction: column;
+                align-items: center;
             }
             
-            .form-grid {
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .selector-row {
                 grid-template-columns: 1fr;
+                gap: 8px;
             }
             
-            .task-item {
-                grid-template-columns: 1fr;
+            .selector-label {
+                min-width: auto;
+            }
+            
+            .history-item {
+                flex-direction: column;
+                align-items: flex-start;
                 gap: 10px;
-                text-align: center;
             }
             
-            .task-item.header {
-                display: none;
-            }
-            
-            .summary-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
+            .task-duration {
+                align-self: flex-end;
             }
         }
     </style>
@@ -467,585 +411,697 @@
         <!-- Header -->
         <div class="header">
             <h1>🏗️ KIEROWNIK PRO</h1>
-            <p>Edytor Projektów - Tworzenie i zarządzanie zleceniami</p>
+            <p>Timer Pracy - System Posadzek v2.0</p>
         </div>
 
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="switchTab('projects')">📋 Projekty</button>
-            <button class="nav-tab" onclick="switchTab('editor')">➕ Nowy projekt</button>
-            <button class="nav-tab" onclick="switchTab('templates')">📄 Szablony</button>
-        </div>
-
-        <!-- Projects List Tab -->
-        <div id="projects-tab" class="tab-content active">
-            <div class="card">
-                <h3>📋 Lista projektów</h3>
-                <div class="projects-list" id="projects-list">
-                    <div class="project-card active">
-                        <div class="project-header">
-                            <div>
-                                <div class="project-title">Volkswagen - Hala produkcyjna</div>
-                                <div class="project-client">625 m² • Żywica samorozlewna</div>
-                            </div>
-                            <div class="project-status status-active">Aktywny</div>
-                        </div>
-                        <div class="project-stats">
-                            <div class="project-stat">
-                                <div class="project-stat-label">Powierzchnia</div>
-                                <div class="project-stat-value">625 m²</div>
-                            </div>
-                            <div class="project-stat">
-                                <div class="project-stat-label">Szacowany czas</div>
-                                <div class="project-stat-value">24h 30m</div>
-                            </div>
-                            <div class="project-stat">
-                                <div class="project-stat-label">Postęp</div>
-                                <div class="project-stat-value">0%</div>
-                            </div>
-                            <div class="project-stat">
-                                <div class="project-stat-label">Status</div>
-                                <div class="project-stat-value">Gotowy</div>
-                            </div>
-                        </div>
-                        <div class="project-actions">
-                            <button class="btn btn-primary btn-small" onclick="openProject('volkswagen')">🎯 Użyj w timerze</button>
-                            <button class="btn btn-secondary btn-small" onclick="editProject('volkswagen')">✏️ Edytuj</button>
-                            <button class="btn btn-success btn-small" onclick="exportProject('volkswagen')">📊 Eksportuj</button>
-                        </div>
-                    </div>
-                    
-                    <div class="project-card">
-                        <div class="project-header">
-                            <div>
-                                <div class="project-title">Posadzka testowa - ul. Wieżowa</div>
-                                <div class="project-client">6 m² • Test nowej żywicy</div>
-                            </div>
-                            <div class="project-status status-ready">Gotowy</div>
-                        </div>
-                        <div class="project-stats">
-                            <div class="project-stat">
-                                <div class="project-stat-label">Powierzchnia</div>
-                                <div class="project-stat-value">6 m²</div>
-                            </div>
-                            <div class="project-stat">
-                                <div class="project-stat-label">Szacowany czas</div>
-                                <div class="project-stat-value">4h 10m</div>
-                            </div>
-                            <div class="project-stat">
-                                <div class="project-stat-label">Postęp</div>
-                                <div class="project-stat-value">0%</div>
-                            </div>
-                            <div class="project-stat">
-                                <div class="project-stat-label">Status</div>
-                                <div class="project-stat-value">Gotowy</div>
-                            </div>
-                        </div>
-                        <div class="project-actions">
-                            <button class="btn btn-primary btn-small" onclick="openProject('wiezowa')">🎯 Użyj w timerze</button>
-                            <button class="btn btn-secondary btn-small" onclick="editProject('wiezowa')">✏️ Edytuj</button>
-                            <button class="btn btn-success btn-small" onclick="exportProject('wiezowa')">📊 Eksportuj</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Project Editor Tab -->
-        <div id="editor-tab" class="tab-content">
-            <div class="card">
-                <h3>➕ Nowy projekt</h3>
-                
-                <!-- Basic Project Info -->
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>🏗️ Nazwa projektu</label>
-                        <input type="text" id="project-name" placeholder="np. Volkswagen - Hala produkcyjna">
-                    </div>
-                    <div class="form-group">
-                        <label>🏢 Klient</label>
-                        <input type="text" id="project-client" placeholder="np. Volkswagen Poznań">
-                    </div>
-                    <div class="form-group">
-                        <label>📏 Powierzchnia (m²)</label>
-                        <input type="number" id="project-area" placeholder="625" oninput="recalculateEstimates()">
-                    </div>
-                    <div class="form-group">
-                        <label>📅 Termin realizacji</label>
-                        <input type="date" id="project-deadline">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>📝 Opis projektu</label>
-                    <textarea id="project-description" rows="3" placeholder="Żywica samorozlewna na starej żywicy, ale trzymającej się podłoża"></textarea>
-                </div>
-                
-                <!-- Template Selection -->
-                <div class="form-group">
-                    <label>📄 Szablon zadań</label>
-                    <select id="template-select" onchange="loadTemplate()">
-                        <option value="">-- Wybierz szablon lub utwórz własny --</option>
-                        <option value="posadzka-przemyslowa">Posadzka przemysłowa (duża powierzchnia)</option>
-                        <option value="posadzka-testowa">Posadzka testowa (mała powierzchnia)</option>
+        <!-- Task Selector -->
+        <div class="task-selector">
+            <h3>🎯 Wybierz zadanie</h3>
+            <div class="selector-grid">
+                <div class="selector-row">
+                    <div class="selector-label">🏗️ Typ projektu:</div>
+                    <select id="project-type-select">
+                        <option value="">-- Wybierz typ projektu --</option>
                         <option value="posadzka-nowa">Posadzka nowa</option>
                         <option value="posadzka-renowacja">Posadzka do renowacji</option>
                     </select>
                 </div>
                 
-                <!-- Tasks List -->
-                <h4 style="margin: 30px 0 15px 0; color: #2d3748;">⏰ Zadania projektu</h4>
-                <div class="task-list">
-                    <div class="task-item header">
-                        <div>Nazwa zadania</div>
-                        <div>Typ</div>
-                        <div>Wydajność</div>
-                        <div>Szacunek</div>
-                        <div>Akcje</div>
-                    </div>
-                    <div id="tasks-container">
-                        <!-- Tasks will be dynamically loaded here -->
-                    </div>
+                <div class="selector-row">
+                    <div class="selector-label">📋 Kategoria:</div>
+                    <select id="category-select" disabled>
+                        <option value="">-- Najpierw wybierz typ projektu --</option>
+                    </select>
                 </div>
                 
-                <div style="margin-top: 20px;">
-                    <button class="btn btn-secondary" onclick="addCustomTask()">➕ Dodaj zadanie</button>
-                    <button class="btn btn-success" onclick="saveProject()">💾 Zapisz projekt</button>
-                    <button class="btn btn-danger" onclick="clearProject()">🗑️ Wyczyść</button>
+                <div class="selector-row">
+                    <div class="selector-label">⏰ Zadanie:</div>
+                    <select id="task-select" disabled>
+                        <option value="">-- Najpierw wybierz kategorię --</option>
+                    </select>
                 </div>
-                
-                <!-- Project Summary -->
-                <div class="project-summary" id="project-summary" style="display: none;">
-                    <h4>📊 Podsumowanie projektu</h4>
-                    <div class="summary-grid">
-                        <div class="summary-item">
-                            <div class="summary-label">Łączny czas</div>
-                            <div class="summary-value" id="total-estimated-time">0h 00m</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="summary-label">Liczba zadań</div>
-                            <div class="summary-value" id="total-tasks-count">0</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="summary-label">Powierzchnia</div>
-                            <div class="summary-value" id="summary-area">0 m²</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="summary-label">Średnio/m²</div>
-                            <div class="summary-value" id="average-per-sqm">0 min</div>
-                        </div>
-                    </div>
-                </div>
+            </div>
+            
+            <div class="task-path" id="task-path" style="display: none;">
+                <span class="task-path-item" id="path-project"></span>
+                <span class="task-path-separator">→</span>
+                <span class="task-path-item" id="path-category"></span>
+                <span class="task-path-separator">→</span>
+                <span class="task-path-item" id="path-task"></span>
             </div>
         </div>
 
-        <!-- Templates Tab -->
-        <div id="templates-tab" class="tab-content">
-            <div class="card">
-                <h3>📄 Szablony projektów</h3>
-                <div class="templates-grid">
-                    <div class="template-card" onclick="useTemplate('posadzka-przemyslowa')">
-                        <div class="template-title">🏭 Posadzka przemysłowa</div>
-                        <div class="template-description">Duże powierzchnie (300-1000m²), żywica samorozlewna, wysokie wydajności</div>
-                        <div class="template-stats">
-                            <span>15 zadań</span>
-                            <span>~20-30h</span>
-                        </div>
-                    </div>
-                    
-                    <div class="template-card" onclick="useTemplate('posadzka-testowa')">
-                        <div class="template-title">🧪 Posadzka testowa</div>
-                        <div class="template-description">Małe powierzchnie (5-20m²), testy materiałów, szybka realizacja</div>
-                        <div class="template-stats">
-                            <span>9 zadań</span>
-                            <span>~3-6h</span>
-                        </div>
-                    </div>
-                    
-                    <div class="template-card" onclick="useTemplate('posadzka-nowa')">
-                        <div class="template-title">🏠 Posadzka nowa</div>
-                        <div class="template-description">Standardowa posadzka na nowym podłożu</div>
-                        <div class="template-stats">
-                            <span>11 zadań</span>
-                            <span>~15-25h</span>
-                        </div>
-                    </div>
-                    
-                    <div class="template-card" onclick="useTemplate('posadzka-renowacja')">
-                        <div class="template-title">🔧 Posadzka do renowacji</div>
-                        <div class="template-description">Renowacja istniejącej posadzki, dodatkowe przygotowania</div>
-                        <div class="template-stats">
-                            <span>13 zadań</span>
-                            <span>~18-30h</span>
-                        </div>
-                    </div>
+        <!-- Timer -->
+        <div class="timer-card">
+            <h2>⏰ Aktualny Timer</h2>
+            <div class="current-task">
+                <span class="status-indicator" id="status-indicator"></span>
+                <span id="current-status">Gotowy do rozpoczęcia</span>
+            </div>
+            <div class="current-task-name" id="current-task-name">Wybierz zadanie aby rozpocząć</div>
+            <div class="timer-display" id="timer-display">00:00:00</div>
+            
+            <div class="controls">
+                <button class="btn btn-success" id="start-btn">▶️ Start</button>
+                <button class="btn btn-primary" id="pause-btn" style="display: none;">⏸️ Pauza</button>
+                <button class="btn btn-danger" id="complete-btn" style="display: none;">✅ Zakończ</button>
+            </div>
+        </div>
+
+        <!-- Today's Summary -->
+        <div class="summary-card">
+            <h3>📊 Podsumowanie dziś - <span id="today-date"></span></h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-label">Łączny czas</div>
+                    <div class="summary-value primary" id="total-time">0:00</div>
                 </div>
-                
-                <div style="margin-top: 30px;">
-                    <h4 style="color: #2d3748; margin-bottom: 15px;">🛠️ Zarządzanie szablonami</h4>
-                    <button class="btn btn-primary">➕ Utwórz nowy szablon</button>
-                    <button class="btn btn-secondary">📤 Importuj szablon</button>
-                    <button class="btn btn-success">📥 Eksportuj szablony</button>
+                <div class="summary-item">
+                    <div class="summary-label">Ukończone</div>
+                    <div class="summary-value success" id="completed-tasks">0</div>
                 </div>
+                <div class="summary-item">
+                    <div class="summary-label">W trakcie</div>
+                    <div class="summary-value warning" id="active-tasks">0</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Średnia/zadanie</div>
+                    <div class="summary-value" id="average-time">0:00</div>
+                </div>
+            </div>
+            
+            <div class="export-actions">
+                <button class="btn btn-secondary" id="export-btn">📊 Eksport CSV</button>
+                <button class="btn btn-secondary" id="export-detailed-btn">📋 Eksport szczegółowy</button>
+                <button class="btn btn-secondary" id="clear-btn">🗑️ Wyczyść historię</button>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div class="history-card">
+            <h3>📋 Historia działań</h3>
+            <div id="history-container">
+                <div class="no-data">Brak zarejestrowanych działań</div>
             </div>
         </div>
     </div>
 
     <script>
-        // PROJECT TEMPLATES WITH REALISTIC DATA FROM USER EXAMPLES
+        // KIEROWNIK PRO - Timer System v2.0 with Project Templates
+        
         const PROJECT_TEMPLATES = {
-            "posadzka-przemyslowa": {
-                name: "Posadzka przemysłowa",
-                tasks: [
-                    {name: "Pakowanie auta", type: "fixed", rate: 2, unit: "h", category: "przygotowania"},
-                    {name: "Rozładunek i tworzenie stanowisk", type: "fixed", rate: 2, unit: "h", category: "przygotowania"},
-                    {name: "Usuwanie/oklejanie elementów", type: "fixed", rate: 3, unit: "h", category: "przygotowanie-podloza"},
-                    {name: "Szlifowanie powierzchni planetarne", type: "area", rate: 100, unit: "m²/h", category: "przygotowanie-podloza"},
-                    {name: "Szlifowanie krawędzi", type: "area", rate: 45, unit: "mb/h", category: "przygotowanie-podloza"},
-                    {name: "Odkurzanie powierzchni", type: "area", rate: 250, unit: "m²/h", category: "przygotowanie-podloza"},
-                    {name: "Oklejanie powierzchni taśmami", type: "fixed", rate: 1, unit: "h", category: "aplikacja-zywic"},
-                    {name: "Gruntowanie powierzchni", type: "area", rate: 100, unit: "m²/h (2 osoby)", category: "aplikacja-zywic"},
-                    {name: "Wyklejenie progów oddzielających", type: "fixed", rate: 1.5, unit: "h", category: "aplikacja-zywic"},
-                    {name: "Wylanie pierwszego koloru", type: "area", rate: 100, unit: "m²/h (3 osoby)", category: "aplikacja-zywic"},
-                    {name: "Wylanie drugiego koloru", type: "area", rate: 100, unit: "m²/h (3 osoby)", category: "aplikacja-zywic"},
-                    {name: "Zdjęcie zabezpieczeń i szlifowanie progów", type: "fixed", rate: 2, unit: "h", category: "aplikacja-zywic"},
-                    {name: "Malowanie linii", type: "fixed", rate: 1, unit: "h", category: "aplikacja-zywic"}
-                ]
+            "posadzka-nowa": {
+                name: "Posadzka nowa",
+                categories: {
+                    "przygotowania": {
+                        name: "Przygotowania do prac",
+                        tasks: ["Przygotowania do prac"]
+                    },
+                    "przygotowanie-podloza": {
+                        name: "Przygotowanie Podłoża", 
+                        tasks: [
+                            "Szlifowanie powierzchni",
+                            "Odkurzanie",
+                            "Nacinanie i łatanie spękań", 
+                            "Oklejanie zabezpieczające"
+                        ]
+                    },
+                    "aplikacja-zywic": {
+                        name: "Aplikacja żywic",
+                        tasks: [
+                            "Gruntowanie",
+                            "Warstwa dodatkowa",
+                            "Aplikacja warstwy wierzchniej",
+                            "Aplikacja lakieru",
+                            "Sprzątanie", 
+                            "Cokoły",
+                            "Inne"
+                        ]
+                    }
+                }
             },
-            "posadzka-testowa": {
-                name: "Posadzka testowa",
-                tasks: [
-                    {name: "Pakowanie auta", type: "fixed", rate: 1, unit: "h", category: "przygotowania"},
-                    {name: "Rozładunek i tworzenie stanowisk", type: "fixed", rate: 1, unit: "h", category: "przygotowania"},
-                    {name: "Szlifowanie powierzchni Columbus", type: "fixed", rate: 0.167, unit: "h", category: "przygotowanie-podloza"},
-                    {name: "Szlifowanie krawędzi bączkiem", type: "fixed", rate: 0.167, unit: "h", category: "przygotowanie-podloza"},
-                    {name: "Odkurzanie powierzchni", type: "fixed", rate: 0.25, unit: "h", category: "przygotowanie-podloza"},
-                    {name: "Oklejanie powierzchni taśmami", type: "fixed", rate: 0.33, unit: "h", category: "aplikacja-zywic"},
-                    {name: "Gruntowanie Sikafloor150", type: "fixed", rate: 0.75, unit: "h", category: "aplikacja-zywic"},
-                    {name: "Aplikacja żywicy Sikafloor 264N", type: "fixed", rate: 0.75, unit: "h", category: "aplikacja-zywic"}
-                ]
+            "posadzka-renowacja": {
+                name: "Posadzka do renowacji",
+                categories: {
+                    "przygotowania": {
+                        name: "Przygotowania do prac",
+                        tasks: ["Przygotowania do prac"]
+                    },
+                    "przygotowanie-podloza": {
+                        name: "Przygotowanie Podłoża",
+                        tasks: [
+                            "Zrywanie niewłaściwego podłoża",
+                            "Szlifowanie powierzchni", 
+                            "Odkurzanie",
+                            "Nacinanie i łatanie spękań",
+                            "Łatanie/równanie punktowe",
+                            "Oklejanie zabezpieczające"
+                        ]
+                    },
+                    "aplikacja-zywic": {
+                        name: "Aplikacja żywic",
+                        tasks: [
+                            "Gruntowanie",
+                            "Warstwa dodatkowa", 
+                            "Aplikacja warstwy wierzchniej",
+                            "Aplikacja lakieru",
+                            "Sprzątanie",
+                            "Cokoły", 
+                            "Inne"
+                        ]
+                    }
+                }
             }
         };
         
-        let currentTasks = [];
-        let currentProjects = [
-            {
-                id: 'volkswagen',
-                name: 'Volkswagen - Hala produkcyjna',
-                client: 'Volkswagen Poznań',
-                area: 625,
-                description: 'Żywica samorozlewna na starej żywicy, ale trzymającej się podłoża',
-                status: 'active',
-                estimatedTime: 24.5,
-                progress: 0,
-                tasks: PROJECT_TEMPLATES['posadzka-przemyslowa'].tasks
-            },
-            {
-                id: 'wiezowa',
-                name: 'Posadzka testowa - ul. Wieżowa',
-                client: 'Test nowej żywicy',
-                area: 6,
-                description: 'Test nowych materiałów Sika',
-                status: 'ready',
-                estimatedTime: 4.17,
-                progress: 0,
-                tasks: PROJECT_TEMPLATES['posadzka-testowa'].tasks
-            }
-        ];
-        
-        function switchTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Show selected tab
-            document.getElementById(tabName + '-tab').classList.add('active');
-            event.target.classList.add('active');
-        }
-        
-        function loadTemplate() {
-            const templateKey = document.getElementById('template-select').value;
-            if (!templateKey || !PROJECT_TEMPLATES[templateKey]) {
-                currentTasks = [];
-                renderTasks();
-                return;
+        class TimerSystem {
+            constructor() {
+                this.currentTask = null;
+                this.startTime = null;
+                this.elapsedTime = 0;
+                this.timerInterval = null;
+                this.history = [];
+                
+                this.init();
             }
             
-            currentTasks = [...PROJECT_TEMPLATES[templateKey].tasks];
-            renderTasks();
-            recalculateEstimates();
-        }
-        
-        function useTemplate(templateKey) {
-            switchTab('editor');
-            document.getElementById('template-select').value = templateKey;
-            loadTemplate();
-        }
-        
-        function renderTasks() {
-            const container = document.getElementById('tasks-container');
-            container.innerHTML = '';
+            init() {
+                this.loadData();
+                this.setupEventListeners();
+                this.updateDisplay();
+                this.updateSummary();
+                this.renderHistory();
+                this.setTodayDate();
+                
+                // Auto-save every 30 seconds
+                setInterval(() => this.saveData(), 30000);
+            }
             
-            currentTasks.forEach((task, index) => {
-                const taskElement = document.createElement('div');
-                taskElement.className = 'task-item';
+            setupEventListeners() {
+                // Timer controls
+                document.getElementById('start-btn').addEventListener('click', () => this.startTask());
+                document.getElementById('pause-btn').addEventListener('click', () => this.pauseTask());
+                document.getElementById('complete-btn').addEventListener('click', () => this.completeTask());
                 
-                const typeClass = task.type === 'fixed' ? 'fixed' : 'area';
-                const typeText = task.type === 'fixed' ? 'Stały' : 'Powierzchniowy';
+                // Export controls
+                document.getElementById('export-btn').addEventListener('click', () => this.exportData());
+                document.getElementById('export-detailed-btn').addEventListener('click', () => this.exportDetailedData());
+                document.getElementById('clear-btn').addEventListener('click', () => this.clearHistory());
                 
-                taskElement.innerHTML = `
-                    <div class="task-name">${task.name}</div>
-                    <div class="task-type ${typeClass}">${typeText}</div>
-                    <div class="task-rate">
-                        <input type="number" step="0.1" value="${task.rate}" 
-                               oninput="updateTaskRate(${index}, this.value)"
-                               placeholder="Wydajność">
-                        <div style="font-size: 10px; color: #718096; margin-top: 2px;">${task.unit}</div>
-                    </div>
-                    <div class="task-estimate" id="estimate-${index}">-</div>
-                    <div class="task-actions">
-                        <button class="btn btn-danger btn-small" onclick="removeTask(${index})">🗑️</button>
-                    </div>
+                // Task selection
+                document.getElementById('project-type-select').addEventListener('change', (e) => this.onProjectTypeChange(e.target.value));
+                document.getElementById('category-select').addEventListener('change', (e) => this.onCategoryChange(e.target.value));
+                document.getElementById('task-select').addEventListener('change', (e) => this.onTaskChange(e.target.value));
+            }
+            
+            onProjectTypeChange(projectType) {
+                const categorySelect = document.getElementById('category-select');
+                const taskSelect = document.getElementById('task-select');
+                
+                // Reset dependent selects
+                categorySelect.innerHTML = '<option value="">-- Wybierz kategorię --</option>';
+                taskSelect.innerHTML = '<option value="">-- Najpierw wybierz kategorię --</option>';
+                taskSelect.disabled = true;
+                
+                if (projectType && PROJECT_TEMPLATES[projectType]) {
+                    categorySelect.disabled = false;
+                    
+                    // Populate categories
+                    Object.entries(PROJECT_TEMPLATES[projectType].categories).forEach(([key, category]) => {
+                        const option = document.createElement('option');
+                        option.value = key;
+                        option.textContent = category.name;
+                        categorySelect.appendChild(option);
+                    });
+                } else {
+                    categorySelect.disabled = true;
+                }
+                
+                this.updateTaskPath();
+            }
+            
+            onCategoryChange(categoryKey) {
+                const projectType = document.getElementById('project-type-select').value;
+                const taskSelect = document.getElementById('task-select');
+                
+                // Reset task select
+                taskSelect.innerHTML = '<option value="">-- Wybierz zadanie --</option>';
+                
+                if (projectType && categoryKey && PROJECT_TEMPLATES[projectType].categories[categoryKey]) {
+                    taskSelect.disabled = false;
+                    
+                    // Populate tasks
+                    const tasks = PROJECT_TEMPLATES[projectType].categories[categoryKey].tasks;
+                    tasks.forEach(task => {
+                        const option = document.createElement('option');
+                        option.value = task;
+                        option.textContent = task;
+                        taskSelect.appendChild(option);
+                    });
+                } else {
+                    taskSelect.disabled = true;
+                }
+                
+                this.updateTaskPath();
+            }
+            
+            onTaskChange(taskName) {
+                this.updateTaskPath();
+            }
+            
+            updateTaskPath() {
+                const projectType = document.getElementById('project-type-select').value;
+                const categoryKey = document.getElementById('category-select').value;
+                const taskName = document.getElementById('task-select').value;
+                
+                const pathElement = document.getElementById('task-path');
+                const pathProject = document.getElementById('path-project');
+                const pathCategory = document.getElementById('path-category');
+                const pathTask = document.getElementById('path-task');
+                
+                if (projectType && categoryKey && taskName) {
+                    pathProject.textContent = PROJECT_TEMPLATES[projectType].name;
+                    pathCategory.textContent = PROJECT_TEMPLATES[projectType].categories[categoryKey].name;
+                    pathTask.textContent = taskName;
+                    pathElement.style.display = 'block';
+                } else {
+                    pathElement.style.display = 'none';
+                }
+            }
+            
+            startTask() {
+                const projectType = document.getElementById('project-type-select').value;
+                const categoryKey = document.getElementById('category-select').value;
+                const taskName = document.getElementById('task-select').value;
+                
+                if (!projectType || !categoryKey || !taskName) {
+                    alert('Proszę wybrać typ projektu, kategorię i zadanie przed rozpoczęciem!');
+                    return;
+                }
+                
+                if (this.currentTask && this.currentTask.status === 'paused') {
+                    // Resume paused task
+                    this.currentTask.status = 'running';
+                    this.currentTask.resumeTime = Date.now();
+                } else {
+                    // Start new task
+                    this.currentTask = {
+                        id: Date.now(),
+                        name: taskName,
+                        projectType: projectType,
+                        projectTypeName: PROJECT_TEMPLATES[projectType].name,
+                        category: categoryKey,
+                        categoryName: PROJECT_TEMPLATES[projectType].categories[categoryKey].name,
+                        startTime: Date.now(),
+                        status: 'running',
+                        elapsedTime: 0
+                    };
+                }
+                
+                this.startTime = Date.now() - this.elapsedTime;
+                this.startTimer();
+                this.updateDisplay();
+                this.saveData();
+            }
+            
+            pauseTask() {
+                if (!this.currentTask) return;
+                
+                this.currentTask.status = 'paused';
+                this.currentTask.pauseTime = Date.now();
+                this.elapsedTime = Date.now() - this.startTime;
+                this.stopTimer();
+                this.updateDisplay();
+                this.saveData();
+            }
+            
+            completeTask() {
+                if (!this.currentTask) return;
+                
+                const endTime = Date.now();
+                const totalTime = endTime - this.currentTask.startTime;
+                
+                const completedTask = {
+                    id: this.currentTask.id,
+                    name: this.currentTask.name,
+                    projectType: this.currentTask.projectType,
+                    projectTypeName: this.currentTask.projectTypeName,
+                    category: this.currentTask.category,
+                    categoryName: this.currentTask.categoryName,
+                    startTime: this.currentTask.startTime,
+                    endTime: endTime,
+                    totalTime: totalTime,
+                    date: new Date().toISOString().split('T')[0],
+                    status: 'completed'
+                };
+                
+                this.history.push(completedTask);
+                this.currentTask = null;
+                this.elapsedTime = 0;
+                this.stopTimer();
+                
+                // Reset form
+                document.getElementById('project-type-select').value = '';
+                document.getElementById('category-select').innerHTML = '<option value="">-- Najpierw wybierz typ projektu --</option>';
+                document.getElementById('category-select').disabled = true;
+                document.getElementById('task-select').innerHTML = '<option value="">-- Najpierw wybierz kategorię --</option>';
+                document.getElementById('task-select').disabled = true;
+                this.updateTaskPath();
+                
+                this.updateDisplay();
+                this.updateSummary();
+                this.renderHistory();
+                this.saveData();
+                
+                // Success feedback
+                this.showNotification('Zadanie ukończone! ✅');
+            }
+            
+            startTimer() {
+                this.stopTimer();
+                this.timerInterval = setInterval(() => {
+                    this.updateTimerDisplay();
+                }, 1000);
+            }
+            
+            stopTimer() {
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                    this.timerInterval = null;
+                }
+            }
+            
+            updateTimerDisplay() {
+                if (!this.currentTask || this.currentTask.status !== 'running') return;
+                
+                const now = Date.now();
+                const elapsed = now - this.startTime;
+                const timeString = this.formatTime(elapsed);
+                
+                document.getElementById('timer-display').textContent = timeString;
+            }
+            
+            formatTime(milliseconds) {
+                const totalSeconds = Math.floor(milliseconds / 1000);
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            formatDuration(milliseconds) {
+                const totalMinutes = Math.floor(milliseconds / 60000);
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                
+                if (hours > 0) {
+                    return `${hours}h ${minutes}m`;
+                } else {
+                    return `${minutes}m`;
+                }
+            }
+            
+            updateDisplay() {
+                const startBtn = document.getElementById('start-btn');
+                const pauseBtn = document.getElementById('pause-btn');
+                const completeBtn = document.getElementById('complete-btn');
+                const currentTaskName = document.getElementById('current-task-name');
+                const currentStatus = document.getElementById('current-status');
+                const statusIndicator = document.getElementById('status-indicator');
+                const timerDisplay = document.getElementById('timer-display');
+                
+                if (this.currentTask) {
+                    currentTaskName.textContent = `${this.currentTask.categoryName} → ${this.currentTask.name}`;
+                    
+                    if (this.currentTask.status === 'running') {
+                        startBtn.style.display = 'none';
+                        pauseBtn.style.display = 'inline-block';
+                        completeBtn.style.display = 'inline-block';
+                        currentStatus.textContent = 'W trakcie';
+                        statusIndicator.className = 'status-indicator status-running';
+                    } else if (this.currentTask.status === 'paused') {
+                        startBtn.style.display = 'inline-block';
+                        pauseBtn.style.display = 'none';
+                        completeBtn.style.display = 'inline-block';
+                        currentStatus.textContent = 'Pauza';
+                        statusIndicator.className = 'status-indicator status-paused';
+                        
+                        // Update timer display with paused time
+                        timerDisplay.textContent = this.formatTime(this.elapsedTime);
+                    }
+                } else {
+                    startBtn.style.display = 'inline-block';
+                    pauseBtn.style.display = 'none';
+                    completeBtn.style.display = 'none';
+                    currentTaskName.textContent = 'Wybierz zadanie aby rozpocząć';
+                    currentStatus.textContent = 'Gotowy do rozpoczęcia';
+                    statusIndicator.className = 'status-indicator';
+                    timerDisplay.textContent = '00:00:00';
+                }
+            }
+            
+            updateSummary() {
+                const today = new Date().toISOString().split('T')[0];
+                const todayTasks = this.history.filter(task => task.date === today);
+                
+                const totalTime = todayTasks.reduce((sum, task) => sum + task.totalTime, 0);
+                const completedTasks = todayTasks.length;
+                const activeTasks = this.currentTask ? 1 : 0;
+                const averageTime = completedTasks > 0 ? totalTime / completedTasks : 0;
+                
+                document.getElementById('total-time').textContent = this.formatDuration(totalTime);
+                document.getElementById('completed-tasks').textContent = completedTasks;
+                document.getElementById('active-tasks').textContent = activeTasks;
+                document.getElementById('average-time').textContent = this.formatDuration(averageTime);
+            }
+            
+            renderHistory() {
+                const container = document.getElementById('history-container');
+                const today = new Date().toISOString().split('T')[0];
+                
+                // Get today's tasks + current task
+                const todayTasks = this.history.filter(task => task.date === today);
+                const allTasks = [...todayTasks];
+                
+                if (this.currentTask) {
+                    allTasks.push({
+                        ...this.currentTask,
+                        status: this.currentTask.status,
+                        isCurrentTask: true
+                    });
+                }
+                
+                if (allTasks.length === 0) {
+                    container.innerHTML = '<div class="no-data">Brak zarejestrowanych działań</div>';
+                    return;
+                }
+                
+                // Sort by start time (newest first)
+                allTasks.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+                
+                container.innerHTML = allTasks.map(task => {
+                    const startTime = new Date(task.startTime);
+                    const duration = task.isCurrentTask ? 
+                        (this.currentTask.status === 'running' ? Date.now() - this.startTime : this.elapsedTime) :
+                        task.totalTime;
+                    
+                    const statusText = task.isCurrentTask ? 
+                        (this.currentTask.status === 'running' ? '🔄 W trakcie' : '⏸️ Pauza') :
+                        '✅ Ukończone';
+                    
+                    const itemClass = task.isCurrentTask ? 'history-item current' : 'history-item';
+                    
+                    return `
+                        <div class="${itemClass}">
+                            <div class="task-info">
+                                <div class="task-name">${task.name}</div>
+                                <div class="task-category">${task.projectTypeName || 'Nieznany typ'} → ${task.categoryName || 'Nieznana kategoria'}</div>
+                                <div class="task-time">
+                                    ${startTime.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })}
+                                    ${task.endTime ? ' - ' + new Date(task.endTime).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }) : ''}
+                                </div>
+                                <div class="task-status">${statusText}</div>
+                            </div>
+                            <div class="task-duration">${this.formatDuration(duration)}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            setTodayDate() {
+                const today = new Date();
+                const dateString = today.toLocaleDateString('pl-PL', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                document.getElementById('today-date').textContent = dateString;
+            }
+            
+            exportData() {
+                const today = new Date().toISOString().split('T')[0];
+                const todayTasks = this.history.filter(task => task.date === today);
+                
+                if (todayTasks.length === 0) {
+                    alert('Brak danych do eksportu!');
+                    return;
+                }
+                
+                let csvContent = 'Zadanie,Kategoria,Typ projektu,Start,Koniec,Czas trwania (min),Data\n';
+                
+                todayTasks.forEach(task => {
+                    const startTime = new Date(task.startTime).toLocaleTimeString('pl-PL');
+                    const endTime = new Date(task.endTime).toLocaleTimeString('pl-PL');
+                    const duration = Math.round(task.totalTime / 60000);
+                    const date = new Date(task.date).toLocaleDateString('pl-PL');
+                    
+                    csvContent += `"${task.name}","${task.categoryName}","${task.projectTypeName}","${startTime}","${endTime}",${duration},"${date}"\n`;
+                });
+                
+                this.downloadCSV(csvContent, `kierownik-pro-${today}.csv`);
+                this.showNotification('Dane wyeksportowane! 📊');
+            }
+            
+            exportDetailedData() {
+                const today = new Date().toISOString().split('T')[0];
+                const todayTasks = this.history.filter(task => task.date === today);
+                
+                if (todayTasks.length === 0) {
+                    alert('Brak danych do eksportu!');
+                    return;
+                }
+                
+                // Group by project type and category
+                const grouped = {};
+                todayTasks.forEach(task => {
+                    const projectKey = task.projectType || 'unknown';
+                    const categoryKey = task.category || 'unknown';
+                    
+                    if (!grouped[projectKey]) grouped[projectKey] = {};
+                    if (!grouped[projectKey][categoryKey]) grouped[projectKey][categoryKey] = [];
+                    
+                    grouped[projectKey][categoryKey].push(task);
+                });
+                
+                let csvContent = 'Typ projektu,Kategoria,Zadanie,Start,Koniec,Czas trwania (min),Czas trwania (hh:mm),Data\n';
+                
+                Object.entries(grouped).forEach(([projectType, categories]) => {
+                    Object.entries(categories).forEach(([category, tasks]) => {
+                        tasks.forEach(task => {
+                            const startTime = new Date(task.startTime).toLocaleTimeString('pl-PL');
+                            const endTime = new Date(task.endTime).toLocaleTimeString('pl-PL');
+                            const durationMin = Math.round(task.totalTime / 60000);
+                            const durationFormatted = this.formatDuration(task.totalTime);
+                            const date = new Date(task.date).toLocaleDateString('pl-PL');
+                            
+                            csvContent += `"${task.projectTypeName}","${task.categoryName}","${task.name}","${startTime}","${endTime}",${durationMin},"${durationFormatted}","${date}"\n`;
+                        });
+                    });
+                });
+                
+                this.downloadCSV(csvContent, `kierownik-pro-szczegolowy-${today}.csv`);
+                this.showNotification('Szczegółowe dane wyeksportowane! 📋');
+            }
+            
+            downloadCSV(csvContent, filename) {
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            
+            clearHistory() {
+                if (confirm('Czy na pewno chcesz wyczyścić całą historię? Tej operacji nie można cofnąć!')) {
+                    this.history = [];
+                    this.updateSummary();
+                    this.renderHistory();
+                    this.saveData();
+                    this.showNotification('Historia wyczyszczona! 🗑️');
+                }
+            }
+            
+            saveData() {
+                try {
+                    const data = {
+                        currentTask: this.currentTask,
+                        elapsedTime: this.elapsedTime,
+                        history: this.history,
+                        lastSaved: Date.now()
+                    };
+                    localStorage.setItem('kierownik-pro-data-v2', JSON.stringify(data));
+                } catch (error) {
+                    console.error('Błąd zapisu danych:', error);
+                }
+            }
+            
+            loadData() {
+                try {
+                    const data = localStorage.getItem('kierownik-pro-data-v2');
+                    if (data) {
+                        const parsed = JSON.parse(data);
+                        this.currentTask = parsed.currentTask || null;
+                        this.elapsedTime = parsed.elapsedTime || 0;
+                        this.history = parsed.history || [];
+                        
+                        // Resume timer if it was running
+                        if (this.currentTask && this.currentTask.status === 'running') {
+                            this.startTime = Date.now() - this.elapsedTime;
+                            this.startTimer();
+                        }
+                        
+                        // Restore form state if current task exists
+                        if (this.currentTask) {
+                            document.getElementById('project-type-select').value = this.currentTask.projectType || '';
+                            this.onProjectTypeChange(this.currentTask.projectType || '');
+                            setTimeout(() => {
+                                document.getElementById('category-select').value = this.currentTask.category || '';
+                                this.onCategoryChange(this.currentTask.category || '');
+                                setTimeout(() => {
+                                    document.getElementById('task-select').value = this.currentTask.name || '';
+                                    this.onTaskChange(this.currentTask.name || '');
+                                }, 100);
+                            }, 100);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Błąd wczytywania danych:', error);
+                }
+            }
+            
+            showNotification(message) {
+                const notification = document.createElement('div');
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #4facfe;
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 10px;
+                    z-index: 1000;
+                    font-weight: 600;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
                 `;
                 
-                container.appendChild(taskElement);
-            });
-            
-            recalculateEstimates();
-        }
-        
-        function updateTaskRate(index, value) {
-            currentTasks[index].rate = parseFloat(value) || 0;
-            recalculateEstimates();
-        }
-        
-        function recalculateEstimates() {
-            const area = parseFloat(document.getElementById('project-area').value) || 0;
-            let totalMinutes = 0;
-            
-            currentTasks.forEach((task, index) => {
-                let estimateMinutes = 0;
+                document.body.appendChild(notification);
                 
-                if (task.type === 'fixed') {
-                    estimateMinutes = task.rate * 60; // Convert hours to minutes
-                } else if (task.type === 'area' && area > 0) {
-                    // Calculate based on area and rate
-                    estimateMinutes = (area / task.rate) * 60; // area/rate gives hours, convert to minutes
-                }
-                
-                totalMinutes += estimateMinutes;
-                
-                // Update display
-                const estimateElement = document.getElementById(`estimate-${index}`);
-                if (estimateElement) {
-                    if (estimateMinutes > 0) {
-                        const hours = Math.floor(estimateMinutes / 60);
-                        const minutes = Math.round(estimateMinutes % 60);
-                        estimateElement.textContent = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-                    } else {
-                        estimateElement.textContent = '-';
-                    }
-                }
-            });
-            
-            // Update summary
-            updateProjectSummary(totalMinutes, area);
-        }
-        
-        function updateProjectSummary(totalMinutes, area) {
-            const summaryElement = document.getElementById('project-summary');
-            
-            if (totalMinutes > 0 && currentTasks.length > 0) {
-                summaryElement.style.display = 'block';
-                
-                const totalHours = Math.floor(totalMinutes / 60);
-                const remainingMinutes = Math.round(totalMinutes % 60);
-                
-                document.getElementById('total-estimated-time').textContent = 
-                    totalHours > 0 ? `${totalHours}h ${remainingMinutes}m` : `${remainingMinutes}m`;
-                document.getElementById('total-tasks-count').textContent = currentTasks.length;
-                document.getElementById('summary-area').textContent = `${area} m²`;
-                
-                if (area > 0) {
-                    const avgMinutesPerSqm = totalMinutes / area;
-                    document.getElementById('average-per-sqm').textContent = `${Math.round(avgMinutesPerSqm)} min`;
-                } else {
-                    document.getElementById('average-per-sqm').textContent = '-';
-                }
-            } else {
-                summaryElement.style.display = 'none';
-            }
-        }
-        
-        function addCustomTask() {
-            const taskName = prompt('Nazwa zadania:');
-            if (!taskName) return;
-            
-            const taskType = confirm('Czy to zadanie o stałym czasie?\n(OK = Stały czas, Anuluj = Zależny od powierzchni)') ? 'fixed' : 'area';
-            const unit = taskType === 'fixed' ? 'h' : 'm²/h';
-            const rate = parseFloat(prompt(`Wydajność (${unit}):`)) || 0;
-            
-            currentTasks.push({
-                name: taskName,
-                type: taskType,
-                rate: rate,
-                unit: unit,
-                category: 'custom'
-            });
-            
-            renderTasks();
-        }
-        
-        function removeTask(index) {
-            if (confirm('Czy na pewno chcesz usunąć to zadanie?')) {
-                currentTasks.splice(index, 1);
-                renderTasks();
-            }
-        }
-        
-        function saveProject() {
-            const name = document.getElementById('project-name').value;
-            const client = document.getElementById('project-client').value;
-            const area = parseFloat(document.getElementById('project-area').value) || 0;
-            const description = document.getElementById('project-description').value;
-            const deadline = document.getElementById('project-deadline').value;
-            
-            if (!name || !area || currentTasks.length === 0) {
-                alert('Proszę wypełnić wszystkie wymagane pola i dodać zadania!');
-                return;
-            }
-            
-            // Calculate total time
-            let totalMinutes = 0;
-            currentTasks.forEach(task => {
-                if (task.type === 'fixed') {
-                    totalMinutes += task.rate * 60;
-                } else if (task.type === 'area') {
-                    totalMinutes += (area / task.rate) * 60;
-                }
-            });
-            
-            const project = {
-                id: 'project_' + Date.now(),
-                name: name,
-                client: client,
-                area: area,
-                description: description,
-                deadline: deadline,
-                status: 'ready',
-                estimatedTime: totalMinutes / 60,
-                progress: 0,
-                tasks: [...currentTasks],
-                createdAt: new Date().toISOString()
-            };
-            
-            currentProjects.push(project);
-            
-            showNotification('Projekt zapisany pomyślnie! ✅');
-            clearProject();
-            switchTab('projects');
-        }
-        
-        function clearProject() {
-            document.getElementById('project-name').value = '';
-            document.getElementById('project-client').value = '';
-            document.getElementById('project-area').value = '';
-            document.getElementById('project-description').value = '';
-            document.getElementById('project-deadline').value = '';
-            document.getElementById('template-select').value = '';
-            
-            currentTasks = [];
-            renderTasks();
-            document.getElementById('project-summary').style.display = 'none';
-        }
-        
-        function openProject(projectId) {
-            const project = currentProjects.find(p => p.id === projectId);
-            if (!project) return;
-            
-            // Save project data for timer
-            localStorage.setItem('activeProject', JSON.stringify(project));
-            
-            // Open timer in new tab
-            window.open('index.html', '_blank');
-            
-            showNotification(`Projekt "${project.name}" otwarty w timerze! 🎯`);
-        }
-        
-        function editProject(projectId) {
-            const project = currentProjects.find(p => p.id === projectId);
-            if (!project) return;
-            
-            // Switch to editor and load project data
-            switchTab('editor');
-            
-            document.getElementById('project-name').value = project.name;
-            document.getElementById('project-client').value = project.client;
-            document.getElementById('project-area').value = project.area;
-            document.getElementById('project-description').value = project.description;
-            document.getElementById('project-deadline').value = project.deadline || '';
-            
-            currentTasks = [...project.tasks];
-            renderTasks();
-            
-            showNotification(`Projekt "${project.name}" załadowany do edycji! ✏️`);
-        }
-        
-        function exportProject(projectId) {
-            const project = currentProjects.find(p => p.id === projectId);
-            if (!project) return;
-            
-            let csvContent = 'Projekt,Klient,Powierzchnia,Zadanie,Typ,Wydajność,Jednostka,Szacowany czas (h)\n';
-            
-            project.tasks.forEach(task => {
-                let estimatedTime = 0;
-                if (task.type === 'fixed') {
-                    estimatedTime = task.rate;
-                } else if (task.type === 'area') {
-                    estimatedTime = project.area / task.rate;
-                }
-                
-                csvContent += `"${project.name}","${project.client}",${project.area},"${task.name}","${task.type}",${task.rate},"${task.unit}",${estimatedTime.toFixed(2)}\n`;
-            });
-            
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `projekt-${project.name.toLowerCase().replace(/\s+/g, '-')}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            showNotification(`Projekt "${project.name}" wyeksportowany! 📊`);
-        }
-        
-        function showNotification(message) {
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 100);
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
                 setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
+                    notification.remove();
+                }, 3000);
+            }
         }
         
-        // Initialize
+        // Initialize the system when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
-            renderTasks();
+            new TimerSystem();
         });
     </script>
 </body>
