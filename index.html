@@ -137,6 +137,26 @@
             font-size: 20px;
         }
         
+        .selector-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .selector-row {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .selector-label {
+            font-weight: 600;
+            color: #2d3748;
+            min-width: 100px;
+            font-size: 14px;
+        }
+        
         .task-selector select {
             width: 100%;
             padding: 15px;
@@ -152,6 +172,32 @@
         .task-selector select:focus {
             outline: none;
             border-color: #4facfe;
+        }
+        
+        .task-selector select:disabled {
+            background: #f7fafc;
+            color: #a0aec0;
+            cursor: not-allowed;
+        }
+        
+        .task-path {
+            background: #f7fafc;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #4facfe;
+            font-size: 14px;
+            color: #2d3748;
+        }
+        
+        .task-path-item {
+            display: inline;
+            font-weight: 500;
+        }
+        
+        .task-path-separator {
+            margin: 0 8px;
+            color: #718096;
         }
         
         .history-card {
@@ -206,6 +252,13 @@
         .task-time {
             color: #718096;
             font-size: 14px;
+        }
+        
+        .task-category {
+            color: #4facfe;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 2px;
         }
         
         .task-duration {
@@ -332,6 +385,15 @@
                 max-width: 300px;
             }
             
+            .selector-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .selector-label {
+                min-width: auto;
+            }
+            
             .history-item {
                 flex-direction: column;
                 align-items: flex-start;
@@ -349,26 +411,44 @@
         <!-- Header -->
         <div class="header">
             <h1>🏗️ KIEROWNIK PRO</h1>
-            <p>Timer Pracy - GitHub Pages</p>
+            <p>Timer Pracy - System Posadzek v2.0</p>
         </div>
 
         <!-- Task Selector -->
         <div class="task-selector">
-            <h3>🎯 Wybierz działanie</h3>
-            <select id="task-select">
-                <option value="">-- Wybierz działanie --</option>
-                <option value="Zabezpieczanie powierzchni">Zabezpieczanie powierzchni</option>
-                <option value="Szlifowanie powierzchni">Szlifowanie powierzchni</option>
-                <option value="Odkurzanie">Odkurzanie</option>
-                <option value="Aplikacja warstwy gruntu">Aplikacja warstwy gruntu</option>
-                <option value="Aplikacja warstwy wierzchniej">Aplikacja warstwy wierzchniej</option>
-                <option value="Lakierowanie">Lakierowanie</option>
-                <option value="Szlifowanie wyrównujące">Szlifowanie wyrównujące</option>
-                <option value="Łatanie ubytków i spękań">Łatanie ubytków i spękań</option>
-                <option value="Warstwa dodatkowa">Warstwa dodatkowa</option>
-                <option value="Przerwa">Przerwa</option>
-                <option value="Inne">Inne</option>
-            </select>
+            <h3>🎯 Wybierz zadanie</h3>
+            <div class="selector-grid">
+                <div class="selector-row">
+                    <div class="selector-label">🏗️ Typ projektu:</div>
+                    <select id="project-type-select">
+                        <option value="">-- Wybierz typ projektu --</option>
+                        <option value="posadzka-nowa">Posadzka nowa</option>
+                        <option value="posadzka-renowacja">Posadzka do renowacji</option>
+                    </select>
+                </div>
+                
+                <div class="selector-row">
+                    <div class="selector-label">📋 Kategoria:</div>
+                    <select id="category-select" disabled>
+                        <option value="">-- Najpierw wybierz typ projektu --</option>
+                    </select>
+                </div>
+                
+                <div class="selector-row">
+                    <div class="selector-label">⏰ Zadanie:</div>
+                    <select id="task-select" disabled>
+                        <option value="">-- Najpierw wybierz kategorię --</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="task-path" id="task-path" style="display: none;">
+                <span class="task-path-item" id="path-project"></span>
+                <span class="task-path-separator">→</span>
+                <span class="task-path-item" id="path-category"></span>
+                <span class="task-path-separator">→</span>
+                <span class="task-path-item" id="path-task"></span>
+            </div>
         </div>
 
         <!-- Timer -->
@@ -378,7 +458,7 @@
                 <span class="status-indicator" id="status-indicator"></span>
                 <span id="current-status">Gotowy do rozpoczęcia</span>
             </div>
-            <div class="current-task-name" id="current-task-name">Wybierz działanie aby rozpocząć</div>
+            <div class="current-task-name" id="current-task-name">Wybierz zadanie aby rozpocząć</div>
             <div class="timer-display" id="timer-display">00:00:00</div>
             
             <div class="controls">
@@ -411,7 +491,8 @@
             </div>
             
             <div class="export-actions">
-                <button class="btn btn-secondary" id="export-btn">📊 Eksport danych</button>
+                <button class="btn btn-secondary" id="export-btn">📊 Eksport CSV</button>
+                <button class="btn btn-secondary" id="export-detailed-btn">📋 Eksport szczegółowy</button>
                 <button class="btn btn-secondary" id="clear-btn">🗑️ Wyczyść historię</button>
             </div>
         </div>
@@ -426,7 +507,72 @@
     </div>
 
     <script>
-        // KIEROWNIK PRO - Timer System v1.0
+        // KIEROWNIK PRO - Timer System v2.0 with Project Templates
+        
+        const PROJECT_TEMPLATES = {
+            "posadzka-nowa": {
+                name: "Posadzka nowa",
+                categories: {
+                    "przygotowania": {
+                        name: "Przygotowania do prac",
+                        tasks: ["Przygotowania do prac"]
+                    },
+                    "przygotowanie-podloza": {
+                        name: "Przygotowanie Podłoża", 
+                        tasks: [
+                            "Szlifowanie powierzchni",
+                            "Odkurzanie",
+                            "Nacinanie i łatanie spękań", 
+                            "Oklejanie zabezpieczające"
+                        ]
+                    },
+                    "aplikacja-zywic": {
+                        name: "Aplikacja żywic",
+                        tasks: [
+                            "Gruntowanie",
+                            "Warstwa dodatkowa",
+                            "Aplikacja warstwy wierzchniej",
+                            "Aplikacja lakieru",
+                            "Sprzątanie", 
+                            "Cokoły",
+                            "Inne"
+                        ]
+                    }
+                }
+            },
+            "posadzka-renowacja": {
+                name: "Posadzka do renowacji",
+                categories: {
+                    "przygotowania": {
+                        name: "Przygotowania do prac",
+                        tasks: ["Przygotowania do prac"]
+                    },
+                    "przygotowanie-podloza": {
+                        name: "Przygotowanie Podłoża",
+                        tasks: [
+                            "Zrywanie niewłaściwego podłoża",
+                            "Szlifowanie powierzchni", 
+                            "Odkurzanie",
+                            "Nacinanie i łatanie spękań",
+                            "Łatanie/równanie punktowe",
+                            "Oklejanie zabezpieczające"
+                        ]
+                    },
+                    "aplikacja-zywic": {
+                        name: "Aplikacja żywic",
+                        tasks: [
+                            "Gruntowanie",
+                            "Warstwa dodatkowa", 
+                            "Aplikacja warstwy wierzchniej",
+                            "Aplikacja lakieru",
+                            "Sprzątanie",
+                            "Cokoły", 
+                            "Inne"
+                        ]
+                    }
+                }
+            }
+        };
         
         class TimerSystem {
             constructor() {
@@ -452,19 +598,104 @@
             }
             
             setupEventListeners() {
+                // Timer controls
                 document.getElementById('start-btn').addEventListener('click', () => this.startTask());
                 document.getElementById('pause-btn').addEventListener('click', () => this.pauseTask());
                 document.getElementById('complete-btn').addEventListener('click', () => this.completeTask());
+                
+                // Export controls
                 document.getElementById('export-btn').addEventListener('click', () => this.exportData());
+                document.getElementById('export-detailed-btn').addEventListener('click', () => this.exportDetailedData());
                 document.getElementById('clear-btn').addEventListener('click', () => this.clearHistory());
+                
+                // Task selection
+                document.getElementById('project-type-select').addEventListener('change', (e) => this.onProjectTypeChange(e.target.value));
+                document.getElementById('category-select').addEventListener('change', (e) => this.onCategoryChange(e.target.value));
+                document.getElementById('task-select').addEventListener('change', (e) => this.onTaskChange(e.target.value));
+            }
+            
+            onProjectTypeChange(projectType) {
+                const categorySelect = document.getElementById('category-select');
+                const taskSelect = document.getElementById('task-select');
+                
+                // Reset dependent selects
+                categorySelect.innerHTML = '<option value="">-- Wybierz kategorię --</option>';
+                taskSelect.innerHTML = '<option value="">-- Najpierw wybierz kategorię --</option>';
+                taskSelect.disabled = true;
+                
+                if (projectType && PROJECT_TEMPLATES[projectType]) {
+                    categorySelect.disabled = false;
+                    
+                    // Populate categories
+                    Object.entries(PROJECT_TEMPLATES[projectType].categories).forEach(([key, category]) => {
+                        const option = document.createElement('option');
+                        option.value = key;
+                        option.textContent = category.name;
+                        categorySelect.appendChild(option);
+                    });
+                } else {
+                    categorySelect.disabled = true;
+                }
+                
+                this.updateTaskPath();
+            }
+            
+            onCategoryChange(categoryKey) {
+                const projectType = document.getElementById('project-type-select').value;
+                const taskSelect = document.getElementById('task-select');
+                
+                // Reset task select
+                taskSelect.innerHTML = '<option value="">-- Wybierz zadanie --</option>';
+                
+                if (projectType && categoryKey && PROJECT_TEMPLATES[projectType].categories[categoryKey]) {
+                    taskSelect.disabled = false;
+                    
+                    // Populate tasks
+                    const tasks = PROJECT_TEMPLATES[projectType].categories[categoryKey].tasks;
+                    tasks.forEach(task => {
+                        const option = document.createElement('option');
+                        option.value = task;
+                        option.textContent = task;
+                        taskSelect.appendChild(option);
+                    });
+                } else {
+                    taskSelect.disabled = true;
+                }
+                
+                this.updateTaskPath();
+            }
+            
+            onTaskChange(taskName) {
+                this.updateTaskPath();
+            }
+            
+            updateTaskPath() {
+                const projectType = document.getElementById('project-type-select').value;
+                const categoryKey = document.getElementById('category-select').value;
+                const taskName = document.getElementById('task-select').value;
+                
+                const pathElement = document.getElementById('task-path');
+                const pathProject = document.getElementById('path-project');
+                const pathCategory = document.getElementById('path-category');
+                const pathTask = document.getElementById('path-task');
+                
+                if (projectType && categoryKey && taskName) {
+                    pathProject.textContent = PROJECT_TEMPLATES[projectType].name;
+                    pathCategory.textContent = PROJECT_TEMPLATES[projectType].categories[categoryKey].name;
+                    pathTask.textContent = taskName;
+                    pathElement.style.display = 'block';
+                } else {
+                    pathElement.style.display = 'none';
+                }
             }
             
             startTask() {
-                const taskSelect = document.getElementById('task-select');
-                const taskName = taskSelect.value;
+                const projectType = document.getElementById('project-type-select').value;
+                const categoryKey = document.getElementById('category-select').value;
+                const taskName = document.getElementById('task-select').value;
                 
-                if (!taskName) {
-                    alert('Proszę wybrać działanie przed rozpoczęciem!');
+                if (!projectType || !categoryKey || !taskName) {
+                    alert('Proszę wybrać typ projektu, kategorię i zadanie przed rozpoczęciem!');
                     return;
                 }
                 
@@ -477,6 +708,10 @@
                     this.currentTask = {
                         id: Date.now(),
                         name: taskName,
+                        projectType: projectType,
+                        projectTypeName: PROJECT_TEMPLATES[projectType].name,
+                        category: categoryKey,
+                        categoryName: PROJECT_TEMPLATES[projectType].categories[categoryKey].name,
                         startTime: Date.now(),
                         status: 'running',
                         elapsedTime: 0
@@ -509,6 +744,10 @@
                 const completedTask = {
                     id: this.currentTask.id,
                     name: this.currentTask.name,
+                    projectType: this.currentTask.projectType,
+                    projectTypeName: this.currentTask.projectTypeName,
+                    category: this.currentTask.category,
+                    categoryName: this.currentTask.categoryName,
                     startTime: this.currentTask.startTime,
                     endTime: endTime,
                     totalTime: totalTime,
@@ -522,7 +761,12 @@
                 this.stopTimer();
                 
                 // Reset form
-                document.getElementById('task-select').value = '';
+                document.getElementById('project-type-select').value = '';
+                document.getElementById('category-select').innerHTML = '<option value="">-- Najpierw wybierz typ projektu --</option>';
+                document.getElementById('category-select').disabled = true;
+                document.getElementById('task-select').innerHTML = '<option value="">-- Najpierw wybierz kategorię --</option>';
+                document.getElementById('task-select').disabled = true;
+                this.updateTaskPath();
                 
                 this.updateDisplay();
                 this.updateSummary();
@@ -588,7 +832,7 @@
                 const timerDisplay = document.getElementById('timer-display');
                 
                 if (this.currentTask) {
-                    currentTaskName.textContent = this.currentTask.name;
+                    currentTaskName.textContent = `${this.currentTask.categoryName} → ${this.currentTask.name}`;
                     
                     if (this.currentTask.status === 'running') {
                         startBtn.style.display = 'none';
@@ -610,7 +854,7 @@
                     startBtn.style.display = 'inline-block';
                     pauseBtn.style.display = 'none';
                     completeBtn.style.display = 'none';
-                    currentTaskName.textContent = 'Wybierz działanie aby rozpocząć';
+                    currentTaskName.textContent = 'Wybierz zadanie aby rozpocząć';
                     currentStatus.textContent = 'Gotowy do rozpoczęcia';
                     statusIndicator.className = 'status-indicator';
                     timerDisplay.textContent = '00:00:00';
@@ -672,6 +916,7 @@
                         <div class="${itemClass}">
                             <div class="task-info">
                                 <div class="task-name">${task.name}</div>
+                                <div class="task-category">${task.projectTypeName || 'Nieznany typ'} → ${task.categoryName || 'Nieznana kategoria'}</div>
                                 <div class="task-time">
                                     ${startTime.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })}
                                     ${task.endTime ? ' - ' + new Date(task.endTime).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }) : ''}
@@ -704,7 +949,7 @@
                     return;
                 }
                 
-                let csvContent = 'Działanie,Start,Koniec,Czas trwania (min),Data\n';
+                let csvContent = 'Zadanie,Kategoria,Typ projektu,Start,Koniec,Czas trwania (min),Data\n';
                 
                 todayTasks.forEach(task => {
                     const startTime = new Date(task.startTime).toLocaleTimeString('pl-PL');
@@ -712,20 +957,64 @@
                     const duration = Math.round(task.totalTime / 60000);
                     const date = new Date(task.date).toLocaleDateString('pl-PL');
                     
-                    csvContent += `"${task.name}","${startTime}","${endTime}",${duration},"${date}"\n`;
+                    csvContent += `"${task.name}","${task.categoryName}","${task.projectTypeName}","${startTime}","${endTime}",${duration},"${date}"\n`;
                 });
                 
+                this.downloadCSV(csvContent, `kierownik-pro-${today}.csv`);
+                this.showNotification('Dane wyeksportowane! 📊');
+            }
+            
+            exportDetailedData() {
+                const today = new Date().toISOString().split('T')[0];
+                const todayTasks = this.history.filter(task => task.date === today);
+                
+                if (todayTasks.length === 0) {
+                    alert('Brak danych do eksportu!');
+                    return;
+                }
+                
+                // Group by project type and category
+                const grouped = {};
+                todayTasks.forEach(task => {
+                    const projectKey = task.projectType || 'unknown';
+                    const categoryKey = task.category || 'unknown';
+                    
+                    if (!grouped[projectKey]) grouped[projectKey] = {};
+                    if (!grouped[projectKey][categoryKey]) grouped[projectKey][categoryKey] = [];
+                    
+                    grouped[projectKey][categoryKey].push(task);
+                });
+                
+                let csvContent = 'Typ projektu,Kategoria,Zadanie,Start,Koniec,Czas trwania (min),Czas trwania (hh:mm),Data\n';
+                
+                Object.entries(grouped).forEach(([projectType, categories]) => {
+                    Object.entries(categories).forEach(([category, tasks]) => {
+                        tasks.forEach(task => {
+                            const startTime = new Date(task.startTime).toLocaleTimeString('pl-PL');
+                            const endTime = new Date(task.endTime).toLocaleTimeString('pl-PL');
+                            const durationMin = Math.round(task.totalTime / 60000);
+                            const durationFormatted = this.formatDuration(task.totalTime);
+                            const date = new Date(task.date).toLocaleDateString('pl-PL');
+                            
+                            csvContent += `"${task.projectTypeName}","${task.categoryName}","${task.name}","${startTime}","${endTime}",${durationMin},"${durationFormatted}","${date}"\n`;
+                        });
+                    });
+                });
+                
+                this.downloadCSV(csvContent, `kierownik-pro-szczegolowy-${today}.csv`);
+                this.showNotification('Szczegółowe dane wyeksportowane! 📋');
+            }
+            
+            downloadCSV(csvContent, filename) {
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement('a');
                 const url = URL.createObjectURL(blob);
                 link.setAttribute('href', url);
-                link.setAttribute('download', `kierownik-pro-${today}.csv`);
+                link.setAttribute('download', filename);
                 link.style.visibility = 'hidden';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                
-                this.showNotification('Dane wyeksportowane! 📊');
             }
             
             clearHistory() {
@@ -746,7 +1035,7 @@
                         history: this.history,
                         lastSaved: Date.now()
                     };
-                    localStorage.setItem('kierownik-pro-data', JSON.stringify(data));
+                    localStorage.setItem('kierownik-pro-data-v2', JSON.stringify(data));
                 } catch (error) {
                     console.error('Błąd zapisu danych:', error);
                 }
@@ -754,7 +1043,7 @@
             
             loadData() {
                 try {
-                    const data = localStorage.getItem('kierownik-pro-data');
+                    const data = localStorage.getItem('kierownik-pro-data-v2');
                     if (data) {
                         const parsed = JSON.parse(data);
                         this.currentTask = parsed.currentTask || null;
@@ -766,6 +1055,20 @@
                             this.startTime = Date.now() - this.elapsedTime;
                             this.startTimer();
                         }
+                        
+                        // Restore form state if current task exists
+                        if (this.currentTask) {
+                            document.getElementById('project-type-select').value = this.currentTask.projectType || '';
+                            this.onProjectTypeChange(this.currentTask.projectType || '');
+                            setTimeout(() => {
+                                document.getElementById('category-select').value = this.currentTask.category || '';
+                                this.onCategoryChange(this.currentTask.category || '');
+                                setTimeout(() => {
+                                    document.getElementById('task-select').value = this.currentTask.name || '';
+                                    this.onTaskChange(this.currentTask.name || '');
+                                }, 100);
+                            }, 100);
+                        }
                     }
                 } catch (error) {
                     console.error('Błąd wczytywania danych:', error);
@@ -773,7 +1076,6 @@
             }
             
             showNotification(message) {
-                // Simple notification - can be enhanced later
                 const notification = document.createElement('div');
                 notification.textContent = message;
                 notification.style.cssText = `
