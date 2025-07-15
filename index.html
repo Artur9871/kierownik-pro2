@@ -639,9 +639,26 @@
                 
                 <!-- Szybkie akcje -->
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;">
-                    <button class="btn" onclick="exportAllData()">📊 Eksportuj dane</button>
-                    <button class="btn btn-secondary" onclick="clearAllData()">🗑️ Wyczyść dane</button>
-                    <a href="https://artur9871.github.io/kierownik-pro2/editor.html" target="_blank" class="btn btn-warning">🔧 Otwórz edytor</a>
+                    <button class="btn" onclick="manualBackup()">💾 Backup danych</button>
+                    <button class="btn btn-secondary" onclick="restoreFromFile()">📥 Przywróć dane</button>
+                    <button class="btn" onclick="exportAllData()">📊 Eksportuj raporty</button>
+                    <button class="btn btn-warning" onclick="clearAllData()">🗑️ Wyczyść wszystko</button>
+                    <a href="https://artur9871.github.io/kierownik-pro2/editor.html" target="_blank" class="btn btn-success">🔧 Otwórz edytor</a>
+                </div>
+                
+                <!-- Storage info -->
+                <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 20px; border: 1px solid #e2e8f0;">
+                    <h4 style="color: #2d3748; margin-bottom: 10px;">📊 Informacje o danych</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; font-size: 14px;">
+                        <div>
+                            <strong>Projektów:</strong> <span id="projectCount">0</span><br>
+                            <strong>Historia zadań:</strong> <span id="taskHistoryCount">0</span>
+                        </div>
+                        <div>
+                            <strong>Ostatni zapis:</strong> <span id="lastSaveTime">Brak</span><br>
+                            <strong>Rozmiar danych:</strong> <span id="dataSize">0 KB</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -664,6 +681,11 @@
         };
         let timerInterval = null;
         let taskHistory = [];
+        let appSettings = {
+            autoBackup: true,
+            backupInterval: 24,
+            lastBackup: null
+        };
         
         // Default projects
         const defaultProjects = [
@@ -727,29 +749,258 @@
         
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            loadProjects();
-            updateCurrentDate();
-            loadHistory();
-            renderDashboard();
-            
-            // Add radio button listeners for import format
-            document.querySelectorAll('input[name="importFormat"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const csvHelp = document.getElementById('csvHelp');
-                    if (this.value === 'csv') {
-                        csvHelp.style.display = 'block';
-                    } else {
-                        csvHelp.style.display = 'none';
-                    }
-                });
-            });
+            showLoadingIndicator();
+            initializeApp();
         });
         
-        function loadProjects() {
-            // Load projects from memory (in real app this would be localStorage)
-            if (projects.length === 0) {
-                projects = [...defaultProjects];
+        async function initializeApp() {
+            try {
+                // Load data from storage
+                await loadDataFromStorage();
+                
+                // Initialize UI
+                updateCurrentDate();
+                renderDashboard();
+                
+                // Setup auto-backup
+                setupAutoBackup();
+                
+                // Add radio button listeners for import format
+                document.querySelectorAll('input[name="importFormat"]').forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        const csvHelp = document.getElementById('csvHelp');
+                        if (this.value === 'csv') {
+                            csvHelp.style.display = 'block';
+                        } else {
+                            csvHelp.style.display = 'none';
+                        }
+                    });
+                });
+                
+                hideLoadingIndicator();
+                showSaveNotification('✅ Dane załadowane pomyślnie', 'success');
+                
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                hideLoadingIndicator();
+                showSaveNotification('⚠️ Błąd ładowania danych - używam wartości domyślnych', 'warning');
+                loadDefaultProjects();
+                renderDashboard();
             }
+        }
+        
+        // Storage functions
+        function saveDataToStorage() {
+            try {
+                const data = {
+                    version: '3.0',
+                    lastSaved: new Date().toISOString(),
+                    projects: projects,
+                    taskHistory: taskHistory,
+                    settings: appSettings,
+                    currentTimer: {
+                        ...currentTimer,
+                        // Don't save intervals or functions
+                        startTime: currentTimer.startTime,
+                        isRunning: false // Reset running state on save
+                    }
+                };
+                
+                localStorage.setItem('kierownikPro_data', JSON.stringify(data));
+                localStorage.setItem('kierownikPro_lastSave', Date.now().toString());
+                
+                // Visual feedback
+                showSaveNotification('💾 Zapisano', 'success');
+                
+                return true;
+            } catch (error) {
+                console.error('Error saving data:', error);
+                showSaveNotification('❌ Błąd zapisu', 'error');
+                return false;
+            }
+        }
+        
+        async function loadDataFromStorage() {
+            try {
+                const savedData = localStorage.getItem('kierownikPro_data');
+                
+                if (!savedData) {
+                    // No saved data - load defaults
+                    loadDefaultProjects();
+                    return;
+                }
+                
+                const data = JSON.parse(savedData);
+                
+                // Validate data structure
+                if (!data.version || !data.projects) {
+                    throw new Error('Invalid data structure');
+                }
+                
+                // Load data
+                projects = data.projects || [];
+                taskHistory = data.taskHistory || [];
+                appSettings = { ...appSettings, ...data.settings };
+                
+                // Ensure we have some projects
+                if (projects.length === 0) {
+                    loadDefaultProjects();
+                }
+                
+                // Update last save time
+                if (data.lastSaved) {
+                    const lastSave = new Date(data.lastSaved);
+                    console.log('Data loaded from:', lastSave.toLocaleString('pl-PL'));
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Error loading data:', error);
+                loadDefaultProjects();
+                throw error;
+            }
+        }
+        
+        function loadDefaultProjects() {
+            projects = [...defaultProjects];
+            taskHistory = [];
+            appSettings = {
+                autoBackup: true,
+                backupInterval: 24,
+                lastBackup: null
+            };
+        }
+        
+        // Auto-save after every significant action
+        function autoSave() {
+            if (appSettings.autoBackup) {
+                saveDataToStorage();
+            }
+        }
+        
+        // Setup automatic backup
+        function setupAutoBackup() {
+            if (!appSettings.autoBackup) return;
+            
+            const interval = appSettings.backupInterval * 60 * 60 * 1000; // hours to ms
+            
+            setInterval(() => {
+                const now = Date.now();
+                const lastBackup = appSettings.lastBackup || 0;
+                
+                if (now - lastBackup > interval) {
+                    createAutoBackup();
+                    appSettings.lastBackup = now;
+                    autoSave();
+                }
+            }, 60000); // Check every minute
+        }
+        
+        function createAutoBackup() {
+            try {
+                const backupData = {
+                    timestamp: new Date().toISOString(),
+                    projects: projects,
+                    taskHistory: taskHistory,
+                    settings: appSettings
+                };
+                
+                const backupKey = `kierownikPro_backup_${Date.now()}`;
+                localStorage.setItem(backupKey, JSON.stringify(backupData));
+                
+                // Keep only last 5 backups
+                cleanOldBackups();
+                
+                showSaveNotification('🔄 Backup automatyczny utworzony', 'info');
+            } catch (error) {
+                console.error('Auto backup failed:', error);
+            }
+        }
+        
+        function cleanOldBackups() {
+            const keys = Object.keys(localStorage).filter(key => key.startsWith('kierownikPro_backup_'));
+            
+            if (keys.length > 5) {
+                // Sort by timestamp and remove oldest
+                keys.sort();
+                for (let i = 0; i < keys.length - 5; i++) {
+                    localStorage.removeItem(keys[i]);
+                }
+            }
+        }
+        
+        // Visual feedback functions
+        function showLoadingIndicator() {
+            const indicator = document.createElement('div');
+            indicator.id = 'loadingIndicator';
+            indicator.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(102, 126, 234, 0.9); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+                    <div style="background: white; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                        <div style="font-size: 24px; margin-bottom: 15px;">🏗️</div>
+                        <div style="font-size: 18px; font-weight: 600; color: #2d3748; margin-bottom: 10px;">KIEROWNIK PRO</div>
+                        <div style="font-size: 14px; color: #718096;">Ładowanie danych...</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(indicator);
+        }
+        
+        function hideLoadingIndicator() {
+            const indicator = document.getElementById('loadingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+        
+        function showSaveNotification(message, type = 'success') {
+            // Remove existing notification
+            const existing = document.getElementById('saveNotification');
+            if (existing) existing.remove();
+            
+            const colors = {
+                success: '#16a34a',
+                error: '#dc2626',
+                warning: '#d97706',
+                info: '#3b82f6'
+            };
+            
+            const notification = document.createElement('div');
+            notification.id = 'saveNotification';
+            notification.innerHTML = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${colors[type]};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            // Add animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'slideIn 0.3s ease reverse';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 3000);
         }
         
         function renderDashboard() {
@@ -763,6 +1014,41 @@
             
             // Create navigation for all projects
             createProjectNavigation();
+            
+            // Update storage info
+            updateStorageInfo();
+        }
+        
+        function updateStorageInfo() {
+            const elements = {
+                projectCount: document.getElementById('projectCount'),
+                taskHistoryCount: document.getElementById('taskHistoryCount'),
+                lastSaveTime: document.getElementById('lastSaveTime'),
+                dataSize: document.getElementById('dataSize')
+            };
+            
+            if (elements.projectCount) elements.projectCount.textContent = projects.length;
+            if (elements.taskHistoryCount) elements.taskHistoryCount.textContent = taskHistory.length;
+            
+            if (elements.lastSaveTime) {
+                const lastSave = localStorage.getItem('kierownikPro_lastSave');
+                if (lastSave) {
+                    const date = new Date(parseInt(lastSave));
+                    elements.lastSaveTime.textContent = date.toLocaleString('pl-PL');
+                } else {
+                    elements.lastSaveTime.textContent = 'Brak';
+                }
+            }
+            
+            if (elements.dataSize) {
+                const data = localStorage.getItem('kierownikPro_data');
+                if (data) {
+                    const sizeKB = Math.round(new Blob([data]).size / 1024);
+                    elements.dataSize.textContent = sizeKB + ' KB';
+                } else {
+                    elements.dataSize.textContent = '0 KB';
+                }
+            }
         }
         
         function createProjectCard(project) {
@@ -1226,7 +1512,9 @@
             };
             
             taskHistory.push(taskRecord);
-            saveHistory();
+            
+            // Auto-save after adding task
+            autoSave();
             
             // Reset timer
             resetTimer(projectId);
@@ -1277,9 +1565,20 @@
                 month: 'long', 
                 day: 'numeric' 
             };
-            const element = document.getElementById(`currentDate-${projectId}`);
-            if (element) {
-                element.textContent = now.toLocaleDateString('pl-PL', options);
+            
+            if (projectId) {
+                const element = document.getElementById(`currentDate-${projectId}`);
+                if (element) {
+                    element.textContent = now.toLocaleDateString('pl-PL', options);
+                }
+            } else {
+                // Update all project dates
+                projects.forEach(project => {
+                    const element = document.getElementById(`currentDate-${project.id}`);
+                    if (element) {
+                        element.textContent = now.toLocaleDateString('pl-PL', options);
+                    }
+                });
             }
         }
         
@@ -1408,37 +1707,147 @@
         function clearProjectHistory(projectId) {
             if (confirm('Czy na pewno chcesz wyczyścić historię zadań tego projektu?')) {
                 taskHistory = taskHistory.filter(task => task.projectId !== projectId);
+                
+                // Auto-save after clearing history
+                autoSave();
+                
                 updateProjectStats(projectId);
                 updateProjectHistoryDisplay(projectId);
                 updateDashboard();
+                
+                showSaveNotification('🗑️ Historia projektu wyczyszczona', 'warning');
             }
         }
         
-        function exportAllData() {
-            const data = {
-                projects: projects,
-                taskHistory: taskHistory,
-                exportDate: new Date().toISOString(),
-                version: '3.0'
+        function manualBackup() {
+            try {
+                const backupData = {
+                    version: '3.0',
+                    timestamp: new Date().toISOString(),
+                    projects: projects,
+                    taskHistory: taskHistory,
+                    settings: appSettings,
+                    exportType: 'manual_backup'
+                };
+                
+                const filename = `kierownik-pro-backup-${new Date().toISOString().split('T')[0]}.json`;
+                downloadJSON(backupData, filename);
+                
+                showSaveNotification('💾 Backup pobrany pomyślnie', 'success');
+            } catch (error) {
+                console.error('Manual backup failed:', error);
+                showSaveNotification('❌ Błąd tworzenia backup', 'error');
+            }
+        }
+        
+        function restoreFromFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        // Validate backup data
+                        if (!data.version || !data.projects || !data.taskHistory) {
+                            throw new Error('Nieprawidłowy format pliku backup');
+                        }
+                        
+                        // Confirm restore
+                        if (!confirm('Czy na pewno chcesz przywrócić dane z pliku? Obecne dane zostaną zastąpione.')) {
+                            return;
+                        }
+                        
+                        // Restore data
+                        projects = data.projects;
+                        taskHistory = data.taskHistory;
+                        appSettings = { ...appSettings, ...data.settings };
+                        
+                        // Save to storage
+                        saveDataToStorage();
+                        
+                        // Re-render dashboard
+                        renderDashboard();
+                        
+                        showSaveNotification('✅ Dane przywrócone pomyślnie', 'success');
+                        
+                    } catch (error) {
+                        console.error('Restore failed:', error);
+                        showSaveNotification('❌ Błąd przywracania danych', 'error');
+                    }
+                };
+                reader.readAsText(file);
             };
             
+            input.click();
+        }
+        
+        function downloadJSON(data, filename) {
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
-            link.setAttribute('download', `kierownik-pro-data-${new Date().toISOString().split('T')[0]}.json`);
+            link.setAttribute('download', filename);
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
         
+        function exportAllData() {
+            try {
+                // Export report data (not backup - different format)
+                const reportData = {
+                    exportDate: new Date().toISOString(),
+                    projectsSummary: projects.map(p => ({
+                        name: p.name,
+                        status: p.status,
+                        taskCount: p.taskCount || 0,
+                        surface: p.surface
+                    })),
+                    taskHistorySummary: {
+                        totalTasks: taskHistory.length,
+                        totalTime: taskHistory.reduce((sum, task) => sum + task.duration, 0),
+                        byProject: projects.map(project => {
+                            const projectTasks = taskHistory.filter(task => task.projectId === project.id);
+                            return {
+                                projectName: project.name,
+                                tasksCount: projectTasks.length,
+                                totalTime: projectTasks.reduce((sum, task) => sum + task.duration, 0)
+                            };
+                        })
+                    },
+                    version: '3.0'
+                };
+                
+                const filename = `kierownik-pro-raport-${new Date().toISOString().split('T')[0]}.json`;
+                downloadJSON(reportData, filename);
+                
+                showSaveNotification('📊 Raport wyeksportowany', 'success');
+            } catch (error) {
+                console.error('Export failed:', error);
+                showSaveNotification('❌ Błąd eksportu', 'error');
+            }
+        }
+        
         function clearAllData() {
-            if (confirm('Czy na pewno chcesz wyczyścić wszystkie dane? Ta operacja jest nieodwracalna.')) {
+            if (confirm('Czy na pewno chcesz wyczyścić wszystkie dane? Ta operacja jest nieodwracalna.\n\nDane zostaną zastąpione projektami domyślnymi.')) {
                 taskHistory = [];
-                projects = [...defaultProjects];
+                loadDefaultProjects();
+                
+                // Save to storage
+                autoSave();
+                
+                // Re-render
                 renderDashboard();
-                alert('Wszystkie dane zostały wyczyszczone.');
+                
+                showSaveNotification('🗑️ Wszystkie dane wyczyszczone', 'warning');
             }
         }
         
@@ -1598,6 +2007,9 @@
             
             // Add to projects array
             projects.push(newProject);
+            
+            // Auto-save after adding project
+            autoSave();
             
             // Re-render dashboard
             renderDashboard();
