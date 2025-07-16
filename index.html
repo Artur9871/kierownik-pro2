@@ -3,2598 +3,1861 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KIEROWNIK PRO - System Zarządzania Projektami</title>
+    <title>🏗️ Kierownik Pro</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            line-height: 1.6;
             color: #333;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 10px;
+            padding: 20px;
         }
-        
-        /* Header */
+
         .header {
-            background: rgba(255,255,255,0.95);
-            padding: 15px 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        .header h1 {
-            color: #2d3748;
-            font-size: 24px;
-            text-align: center;
-            margin-bottom: 5px;
-        }
-        
-        .header p {
-            text-align: center;
-            color: #718096;
-            font-size: 14px;
-        }
-        
-        /* Navigation */
-        .nav-input {
-            display: none;
-        }
-        
-        .main-nav {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        
-        .main-nav label {
-            background: rgba(255,255,255,0.9);
-            color: #2d3748;
-            padding: 15px 30px;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 3px solid #4facfe;
-            font-weight: 700;
-            font-size: 16px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.3);
-            margin: 0 10px;
-        }
-        
-        .main-nav label:hover {
-            background: rgba(255,255,255,1);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.4);
-        }
-        
-        #nav-dashboard:checked + label {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            border-color: white;
-            transform: scale(1.05);
-        }
-        
-        /* Add project button */
-        .add-project-btn {
-            background: rgba(255,255,255,0.9);
-            color: #56ab2f;
-            padding: 15px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 3px solid #56ab2f;
-            font-weight: 700;
-            font-size: 24px;
-            box-shadow: 0 6px 20px rgba(86, 171, 47, 0.3);
-            margin: 0 10px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 60px;
-        }
-        
-        .add-project-btn:hover {
-            background: rgba(255,255,255,1);
-            transform: translateY(-3px) scale(1.1);
-            box-shadow: 0 10px 30px rgba(86, 171, 47, 0.4);
-        }
-        
-        /* Back button */
-        .back-btn {
-            background: rgba(255,255,255,0.9);
-            color: #2d3748;
-            padding: 12px 24px;
-            border-radius: 20px;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            display: inline-block;
-            border: 2px solid rgba(255,255,255,0.5);
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        
-        .back-btn:hover {
-            background: rgba(255,255,255,1);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-        }
-        
-        /* Content Sections */
-        .section {
-            display: none;
-            background: rgba(255,255,255,0.95);
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
             padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        /* Show sections based on navigation */
-        #nav-dashboard:checked ~ .content #section-dashboard { display: block; }
-        
-        /* Dynamic project sections */
-        .project-section {
-            display: none;
-        }
-        
-        /* Dashboard specific styles */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .project-card {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-        }
-        
-        .project-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-        }
-        
-        .project-card h3 {
-            font-size: 20px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .project-card.imported {
-            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
-        }
-        
-        .project-status {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-        
-        .status-active {
-            background: rgba(34, 197, 94, 0.2);
-            color: #16a34a;
-            border: 1px solid rgba(34, 197, 94, 0.3);
-        }
-        
-        .status-planning {
-            background: rgba(251, 191, 36, 0.2);
-            color: #d97706;
-            border: 1px solid rgba(251, 191, 36, 0.3);
-        }
-        
-        .status-imported {
-            background: rgba(34, 197, 94, 0.2);
-            color: #16a34a;
-            border: 1px solid rgba(34, 197, 94, 0.3);
-        }
-        
-        .project-info {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-        
-        .info-item {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .info-label {
-            opacity: 0.8;
-            font-size: 12px;
-            margin-bottom: 2px;
-        }
-        
-        .info-value {
-            font-weight: 600;
-            font-size: 16px;
-        }
-        
-        .quick-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .quick-action {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-        
-        .quick-action:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-        }
-        
-        /* Project Navigation */
-        .project-nav {
-            display: none;
-            background: rgba(255,255,255,0.15);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-        }
-        
-        .nav-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 12px;
-        }
-        
-        .nav-grid label, .nav-grid button {
-            background: rgba(255,255,255,0.25);
-            color: white;
-            padding: 15px 16px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 13px;
-            font-weight: 600;
-            border: 3px solid transparent;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .nav-grid label:hover, .nav-grid button:hover {
-            background: rgba(255,255,255,0.4);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-        }
-        
-        /* Section tiles */
-        .section-tiles {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
-        }
-        
-        .section-tile {
-            background: #f8fafc;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 4px solid transparent;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .section-tile:hover {
-            background: #e2e8f0;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
-        /* Form styles */
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #2d3748;
-        }
-        
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s ease;
-        }
-        
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: #4facfe;
-        }
-        
-        .btn {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-right: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
-        }
-        
-        .btn-warning {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        
-        /* Timer specific styles */
-        .timer-container {
-            display: grid;
-            gap: 20px;
-        }
-        
-        .timer-display {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        
-        .timer-time {
-            font-size: 48px;
-            font-weight: 700;
-            margin: 20px 0;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .timer-status {
-            font-size: 18px;
-            margin-bottom: 15px;
-            opacity: 0.9;
-        }
-        
-        .timer-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        
-        .timer-btn {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 2px solid rgba(255,255,255,0.3);
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .timer-btn:hover:not(:disabled) {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-        }
-        
-        .timer-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .timer-btn.active {
-            background: rgba(255,255,255,0.9);
-            color: #2d3748;
-        }
-        
-        .project-selector {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-        
-        .project-selector h3 {
-            color: #2d3748;
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        
-        .task-history {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-        
-        .history-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid #e2e8f0;
         }
-        
-        .history-item:last-child {
-            border-bottom: none;
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #4a5568;
+            cursor: pointer;
         }
-        
-        .task-info {
-            flex: 1;
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
         }
-        
-        .task-name {
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 5px;
+
+        .nav-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
         }
-        
-        .task-details {
-            font-size: 12px;
-            color: #718096;
+
+        .nav-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
         }
-        
-        .task-duration {
-            font-weight: 600;
-            color: #4facfe;
-            font-size: 16px;
+
+        .nav-btn.active {
+            background: #4c51bf;
         }
-        
-        .stats-grid {
+
+        .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
-            margin: 20px 0;
+            margin-bottom: 20px;
+            max-width: 100%;
         }
-        
-        .stat-item {
-            background: #f8fafc;
+
+        .project-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .project-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .project-card.active {
+            border-left: 4px solid #48bb78;
+        }
+
+        .project-card.planned {
+            border-left: 4px solid #ed8936;
+        }
+
+        .project-card.imported {
+            border-left: 4px solid #667eea;
+        }
+
+        .project-card.closed {
+            border-left: 4px solid #718096;
+        }
+
+        .project-card h3 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .project-meta {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .project-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #a0aec0;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: -5px -5px 0 -5px;
+        }
+
+        .project-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .project-card.active .project-status {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .project-card.planned .project-status {
+            background: #fed7aa;
+            color: #9c4221;
+        }
+
+        .project-card.imported .project-status {
+            background: #bee3f8;
+            color: #2a4365;
+        }
+
+        .project-card.closed .project-status {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .project-view {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .project-title {
+            font-size: 24px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .section-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .tab-btn.active:hover {
+            background: #5a67d8;
+        }
+
+        .timer-section {
+            display: none;
+        }
+
+        .timer-section.active {
+            display: block;
+        }
+
+        .active-tasks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .task-timer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             padding: 20px;
             border-radius: 12px;
-            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
-        
+
+        .task-timer.paused {
+            background: linear-gradient(135deg, #fbb6ce 0%, #f093fb 100%);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .task-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .task-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .task-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .task-progress {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            height: 8px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: rgba(255, 255, 255, 0.8);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .team-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .team-info span:last-child {
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .add-task-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .task-selector {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .task-select {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+        }
+
+        .task-select::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .task-select option {
+            background: #4a5568;
+            color: white;
+        }
+
+        .team-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .team-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .team-input {
+            width: 60px;
+            padding: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .add-task-btn {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .add-task-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(72, 187, 120, 0.4);
+        }
+
+        .add-task-btn:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .task-estimation {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .overview-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+        }
+
         .stat-value {
             font-size: 24px;
-            font-weight: 700;
-            color: #2d3748;
+            font-weight: bold;
             margin-bottom: 5px;
         }
-        
+
         .stat-label {
             font-size: 12px;
-            color: #718096;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            opacity: 0.8;
         }
-        
-        /* Import/Export styles */
-        .import-section {
-            background: #e0f2fe;
-            border: 2px solid #0ea5e9;
-            border-radius: 12px;
+
+        .history-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
             padding: 20px;
-            margin: 20px 0;
+            margin-top: 20px;
         }
-        
-        .import-section h4 {
-            color: #0369a1;
+
+        .history-header {
+            color: white;
+            font-size: 18px;
             margin-bottom: 15px;
         }
-        
-        .import-instructions {
-            color: #0c4a6e;
-            margin-bottom: 15px;
-            line-height: 1.6;
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        
-        /* Responsive */
+
+        .history-task {
+            color: white;
+            font-weight: bold;
+        }
+
+        .history-details {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #48bb78;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 18px;
+        }
+
+        .data-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: rgba(102, 126, 234, 0.8);
+            color: white;
+            border: 1px solid rgba(102, 126, 234, 0.6);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: #667eea;
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+
+        .action-btn.danger {
+            background: #f56565;
+        }
+
+        .action-btn.danger:hover {
+            background: #e53e3e;
+        }
+
+        .compact-import {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .compact-import.show {
+            display: block;
+        }
+
+        .import-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .import-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .import-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .import-options {
+            display: flex;
+            gap: 15px;
+        }
+
+        .import-option {
+            color: white;
+            font-size: 14px;
+        }
+
+        .import-textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .import-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .import-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .import-btn {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .import-btn:hover {
+            background: #38a169;
+        }
+
+        .data-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            color: white;
+            font-size: 12px;
+        }
+
         @media (max-width: 768px) {
             .container {
-                padding: 5px;
+                padding: 10px;
             }
             
-            .main-nav {
+            .header {
                 flex-direction: column;
-                align-items: center;
-                gap: 10px;
+                gap: 15px;
+            }
+
+            .nav-buttons {
+                flex-wrap: wrap;
+                justify-content: center;
             }
             
-            .main-nav label, .add-project-btn {
-                margin: 0;
-                min-width: 200px;
-                text-align: center;
-            }
-            
-            .add-project-btn {
-                min-width: 60px;
-            }
-            
-            .timer-time {
-                font-size: 36px;
-            }
-            
-            .timer-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .timer-btn {
-                width: 100%;
-                max-width: 200px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .nav-grid {
-                grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-            }
-            
-            .dashboard-grid {
+            .dashboard {
                 grid-template-columns: 1fr;
+            }
+            
+            .active-tasks {
+                grid-template-columns: 1fr;
+            }
+            
+            .task-selector {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .task-select {
+                min-width: auto;
+            }
+            
+            .overview-stats {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <div class="header">
-            <h1>🏗️ KIEROWNIK PRO</h1>
-            <p>System Zarządzania Projektami Budowlanymi</p>
+            <div class="logo" onclick="showDashboard()">🏗️ KIEROWNIK PRO</div>
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="showDashboard()">🏠 Dashboard</button>
+                <button class="nav-btn" onclick="saveData()">💾 Zapisz</button>
+                <button class="nav-btn" onclick="undoLastAction()" 
+                        style="background: #f56565;" title="Cofnij ostatnią akcję">↩️ Cofnij</button>
+            </div>
         </div>
-        
-        <!-- MAIN NAVIGATION -->
-        <input type="radio" name="main-nav" id="nav-dashboard" class="nav-input" checked>
-        
-        <div class="main-nav">
-            <label for="nav-dashboard" onclick="goToDashboard()">🏠 DASHBOARD</label>
-            <button class="add-project-btn" onclick="toggleImportSection()" title="Dodaj nowy projekt">➕</button>
+
+        <div id="loadingScreen" class="loading">
+            Ładowanie danych...
         </div>
-        
-        <!-- PROJECT NAVIGATION (dynamically generated) -->
-        <div id="project-nav-container"></div>
-        
-        <!-- Content Sections -->
-        <div class="content">
-            <!-- DASHBOARD SECTION -->
-            <div id="section-dashboard" class="section">
-                <h2>🏠 Dashboard - Przegląd Projektów</h2>
-                
-                <!-- Projects Grid (dynamically generated) -->
-                <div class="dashboard-grid" id="projects-grid">
-                    <!-- Projects will be inserted here -->
-                </div>
-                
-                <!-- Import projektu - MINIMALNA WERSJA -->
-                <div class="import-section" id="import-section" style="display: none;">
-                    <h4>📥 Import nowego projektu</h4>
-                    <div class="import-instructions">
-                        <p><strong>Zaimportuj projekt z edytora (JSON) lub dane z CSV:</strong></p>
+
+        <div id="dashboardView" style="display: none;">
+            <button class="import-toggle" onclick="toggleImport()">➕ Nowy projekt</button>
+            
+            <div id="importSection" class="compact-import">
+                <div class="import-form">
+                    <div class="import-options">
+                        <label class="import-option">
+                            <input type="radio" name="importType" value="json" checked> JSON (dane z edytora)
+                        </label>
+                        <label class="import-option">
+                            <input type="radio" name="importType" value="csv"> CSV (dane tabelaryczne)
+                        </label>
                     </div>
                     
-                    <!-- Format selector -->
-                    <div style="margin: 15px 0;">
-                        <div style="display: flex; gap: 10px;">
-                            <label style="display: flex; align-items: center; cursor: pointer;">
-                                <input type="radio" name="importFormat" value="json" checked style="margin-right: 5px;">
-                                📄 JSON (z edytora)
-                            </label>
-                            <label style="display: flex; align-items: center; cursor: pointer;">
-                                <input type="radio" name="importFormat" value="csv" style="margin-right: 5px;">
-                                📊 CSV (dane tabelaryczne)
-                            </label>
-                        </div>
-                    </div>
+                    <textarea id="importData" class="import-textarea" 
+                              placeholder="Wklej dane projektu tutaj..."></textarea>
                     
-                    <div style="display: flex; gap: 10px; align-items: end;">
-                        <div style="flex: 1;">
-                            <textarea id="importProjectData" placeholder="Wklej tutaj dane JSON lub CSV..." style="width: 100%; height: 80px; font-family: monospace; font-size: 12px; padding: 10px; border: 2px solid #e2e8f0; border-radius: 6px;"></textarea>
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 5px;">
-                            <button onclick="importProject()" class="btn btn-success">📥 JSON</button>
-                            <button onclick="importCSVProject()" class="btn btn-warning">📊 CSV</button>
-                        </div>
-                    </div>
-                    
-                    <!-- CSV format help -->
-                    <div id="csvHelp" style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 6px; margin-top: 10px; display: none;">
-                        <p style="color: #856404; font-size: 12px; margin: 0;">
-                            <strong>Format CSV:</strong> Projekt,Klient,Powierzchnia,Zadanie,Typ,Wydajność,Jednostka,Szacowany_czas
-                        </p>
-                    </div>
-                    
-                    <div style="text-align: center; margin-top: 15px;">
-                        <button onclick="toggleImportSection()" class="btn btn-secondary">❌ Zamknij</button>
-                    </div>
-                </div>
-                
-                <!-- Kompaktowe akcje -->
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 20px 0; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button class="btn" onclick="manualBackup()" style="padding: 8px 16px;">💾 Backup</button>
-                        <button class="btn btn-secondary" onclick="restoreFromFile()" style="padding: 8px 16px;">📥 Przywróć</button>
-                        <button class="btn" onclick="exportAllData()" style="padding: 8px 16px;">📊 Eksport</button>
-                        <button class="btn btn-warning" onclick="clearAllData()" style="padding: 8px 16px;">🗑️ Wyczyść</button>
-                        <a href="https://artur9871.github.io/kierownik-pro2/editor.html" target="_blank" class="btn btn-success" style="padding: 8px 16px; text-decoration: none;">🔧 Edytor</a>
-                    </div>
-                    
-                    <!-- Kompaktowe info o danych -->
-                    <div style="margin-left: auto; font-size: 12px; color: #718096; text-align: right;">
-                        <div><strong>📊 Projekty:</strong> <span id="projectCount">0</span> | <strong>Historia:</strong> <span id="taskHistoryCount">0</span> | <strong>Rozmiar:</strong> <span id="dataSize">0 KB</span></div>
-                        <div><strong>💾 Ostatni zapis:</strong> <span id="lastSaveTime">Brak</span></div>
+                    <div class="import-buttons">
+                        <button class="import-btn" onclick="importProject()">📥 Importuj</button>
+                        <button class="import-btn" onclick="closeImport()" style="background: #a0aec0;">✕ Zamknij</button>
                     </div>
                 </div>
             </div>
             
-            <!-- PROJECT SECTIONS (dynamically generated) -->
-            <div id="project-sections-container"></div>
+            <div id="projectsContainer" class="dashboard">
+                <!-- Projekty będą dodawane dynamicznie -->
+            </div>
+            
+            <div class="data-actions">
+                <button class="action-btn" onclick="backupData()">💾 Backup danych</button>
+                <button class="action-btn" onclick="document.getElementById('restoreInput').click()">📥 Przywróć dane</button>
+                <button class="action-btn" onclick="exportProjectData()">📊 Eksportuj CSV</button>
+                <button class="action-btn danger" onclick="clearAllData()">🗑️ Wyczyść wszystko</button>
+            </div>
+            
+            <div class="data-info">
+                <div>
+                    <span id="projectCount">Projekty: 0</span> | 
+                    <span id="taskCount">Historia: 0</span> | 
+                    <span id="undoCount">Cofnij: 0</span> | 
+                    <span id="lastSave">Ostatni zapis: Brak</span>
+                </div>
+                <div id="dataSize">0 KB</div>
+            </div>
+        </div>
+
+        <div id="projectView" style="display: none;">
+            <div class="project-view">
+                <div class="project-header">
+                    <div class="project-title" id="projectTitle">Projekt</div>
+                    <button class="back-btn" onclick="showDashboard()">← Dashboard</button>
+                </div>
+                
+                <div class="section-tabs">
+                    <button class="tab-btn active" onclick="showTab('time')">⏰ Czas</button>
+                    <button class="tab-btn" onclick="showTab('calendar')">📅 Kalendarz</button>
+                    <button class="tab-btn" onclick="showTab('materials')">📦 Materiały</button>
+                    <button class="tab-btn" onclick="showTab('equipment')">🔧 Sprzęt</button>
+                    <button class="tab-btn" onclick="showTab('safety')">🦺 BHP</button>
+                    <button class="tab-btn" onclick="showTab('logistics')">🚚 Logistyka</button>
+                </div>
+
+                <div id="timeTab" class="timer-section active">
+                    <div class="overview-stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="activeTasksCount">0</div>
+                            <div class="stat-label">Aktywne zadania</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalWorkersCount">0</div>
+                            <div class="stat-label">Pracownicy w pracy</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="todayTimeCount">0h 0m</div>
+                            <div class="stat-label">Dzisiaj przepracowano</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="efficiencyAverage">100%</div>
+                            <div class="stat-label">Średnia wydajność</div>
+                        </div>
+                    </div>
+
+                    <div id="activeTasksContainer" class="active-tasks">
+                        <!-- Aktywne zadania będą dodawane tutaj -->
+                    </div>
+
+                    <div class="add-task-section">
+                        <div class="task-selector">
+                            <select id="taskSelect" class="task-select">
+                                <option value="">🎯 Wybierz zadanie do wykonania</option>
+                            </select>
+                            
+                            <div class="team-selector">
+                                <span class="team-label">👥 Ekipa:</span>
+                                <input type="number" id="teamSize" class="team-input" min="1" max="10" value="1">
+                                <span class="team-label">osób</span>
+                            </div>
+                            
+                            <button id="addTaskBtn" class="add-task-btn" onclick="addNewTask()">
+                                ▶️ Rozpocznij zadanie
+                            </button>
+                        </div>
+                        
+                        <div id="taskEstimation" class="task-estimation">
+                            <!-- Szacunki czasu będą pokazywane tutaj -->
+                        </div>
+                    </div>
+
+                    <div class="history-section">
+                        <div class="history-header">📋 Historia ukończonych zadań</div>
+                        <div id="historyContainer">
+                            <!-- Historia będzie dodawana tutaj -->
+                        </div>
+                    </div>
+                </div>
+
+                <div id="calendarTab" class="timer-section">
+                    <h3 style="color: white;">📅 Kalendarz Projektowy</h3>
+                    <p style="color: rgba(255, 255, 255, 0.8);">Planowanie zadań i terminów realizacji</p>
+                    <div style="color: rgba(255, 255, 255, 0.6); font-style: italic; margin-top: 20px;">
+                        Sekcja w przygotowaniu...
+                    </div>
+                </div>
+
+                <div id="materialsTab" class="timer-section">
+                    <h3 style="color: white;">📦 Zarządzanie Materiałami</h3>
+                    <p style="color: rgba(255, 255, 255, 0.8);">Kontrola zużycia materiałów i zamówień</p>
+                    <div style="color: rgba(255, 255, 255, 0.6); font-style: italic; margin-top: 20px;">
+                        Sekcja w przygotowaniu...
+                    </div>
+                </div>
+
+                <div id="equipmentTab" class="timer-section">
+                    <h3 style="color: white;">🔧 Sprzęt i Narzędzia</h3>
+                    <p style="color: rgba(255, 255, 255, 0.8);">Checklisty, serwis, awarie sprzętu</p>
+                    <div style="color: rgba(255, 255, 255, 0.6); font-style: italic; margin-top: 20px;">
+                        Sekcja w przygotowaniu...
+                    </div>
+                </div>
+
+                <div id="safetyTab" class="timer-section">
+                    <h3 style="color: white;">🦺 Bezpieczeństwo i Higiena Pracy</h3>
+                    <p style="color: rgba(255, 255, 255, 0.8);">Kontrole BHP, szkolenia, zgłaszanie incydentów</p>
+                    <div style="color: rgba(255, 255, 255, 0.6); font-style: italic; margin-top: 20px;">
+                        Sekcja w przygotowaniu...
+                    </div>
+                </div>
+
+                <div id="logisticsTab" class="timer-section">
+                    <h3 style="color: white;">🚚 Logistyka</h3>
+                    <p style="color: rgba(255, 255, 255, 0.8);">Transport, dostawy, planowanie tras</p>
+                    <div style="color: rgba(255, 255, 255, 0.6); font-style: italic; margin-top: 20px;">
+                        Sekcja w przygotowaniu...
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
+    <input type="file" id="restoreInput" style="display: none;" accept=".json" onchange="restoreData(this)">
+
+    <div id="notification" class="notification"></div>
+
     <script>
-        // Global state
-        let projects = [];
+        // Globalny stan aplikacji
         let currentProject = null;
-        let currentTimer = {
-            isRunning: false,
-            isPaused: false,
-            startTime: null,
-            pausedTime: 0,
-            currentTask: null,
-            elapsedTime: 0,
-            projectId: null,
-            taskEstimates: null,
-            taskData: null
-        };
-        let timerInterval = null;
+        let projects = [];
+        let activeTasks = [];
         let taskHistory = [];
-        let appSettings = {
-            autoBackup: true,
-            backupInterval: 24,
-            lastBackup: null
-        };
-        
-        // Default projects
-        const defaultProjects = [
-            {
-                id: 'project1',
-                name: 'Dom Kowalski',
-                location: 'ul. Kwiatowa 15, Poznań',
-                icon: '🏠',
-                status: 'active',
-                statusText: '🟢 AKTYWNY',
-                progress: 65,
-                todayTask: 'Gruntowanie',
-                surface: '120m²',
-                surfaceNumber: 120, // numeric value for calculations
-                contact: '+48601234567',
-                mapUrl: 'https://maps.apple.com/?q=ul.+Kwiatowa+15+Poznań',
-                gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                categories: {
-                    'przygotowania': {
-                        name: 'Przygotowania do prac',
-                        tasks: [
-                            {
-                                name: 'Zabezpieczanie powierzchni',
-                                estimatedTime: 2, // hours
-                                efficiency: 60, // m²/h
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Przygotowanie sprzętu',
-                                estimatedTime: 1.5,
-                                efficiency: null,
-                                unit: 'h',
-                                type: 'fixed',
-                                suggestedPeople: 1
-                            }
-                        ]
-                    },
-                    'przygotowanie-podloza': {
-                        name: 'Przygotowanie Podłoża',
-                        tasks: [
-                            {
-                                name: 'Szlifowanie powierzchni',
-                                estimatedTime: 2.4, // 120m² / 50m²/h
-                                efficiency: 50,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Odkurzanie',
-                                estimatedTime: 0.5, // 120m² / 240m²/h
-                                efficiency: 240,
-                                unit: 'm²/h', 
-                                type: 'area',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Nacinanie i łatanie spękań',
-                                estimatedTime: 1.5,
-                                efficiency: 80,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Oklejanie zabezpieczające',
-                                estimatedTime: 1,
-                                efficiency: null,
-                                unit: 'h',
-                                type: 'fixed',
-                                suggestedPeople: 1
-                            }
-                        ]
-                    },
-                    'aplikacja-zywic': {
-                        name: 'Aplikacja żywic',
-                        tasks: [
-                            {
-                                name: 'Gruntowanie',
-                                estimatedTime: 2.4, // 120m² / 50m²/h per person * 2 people
-                                efficiency: 50,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 2
-                            },
-                            {
-                                name: 'Warstwa dodatkowa', 
-                                estimatedTime: 2.4,
-                                efficiency: 50,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 2
-                            },
-                            {
-                                name: 'Aplikacja warstwy wierzchniej',
-                                estimatedTime: 1.6, // 120m² / 75m²/h
-                                efficiency: 75,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 2
-                            },
-                            {
-                                name: 'Aplikacja lakieru',
-                                estimatedTime: 1.2,
-                                efficiency: 100,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Sprzątanie',
-                                estimatedTime: 1,
-                                efficiency: null,
-                                unit: 'h',
-                                type: 'fixed',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Cokoły',
-                                estimatedTime: 2,
-                                efficiency: 15,
-                                unit: 'mb/h',
-                                type: 'linear',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Inne',
-                                estimatedTime: 1,
-                                efficiency: null,
-                                unit: 'h',
-                                type: 'fixed',
-                                suggestedPeople: 1
-                            }
-                        ]
-                    }
-                }
-            },
-            {
-                id: 'project2',
-                name: 'Mieszkanie Nowak',
-                location: 'ul. Różana 8, Poznań',
-                icon: '🏢',
-                status: 'planning',
-                statusText: '🟡 PLANOWANIE',
-                startDate: '28.06.2025',
-                estimatedTime: '5 dni',
-                surface: '85m²',
-                surfaceNumber: 85,
-                contact: '+48602345678',
-                mapUrl: 'https://maps.apple.com/?q=ul.+Różana+8+Poznań',
-                gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                categories: {
-                    'przygotowania': {
-                        name: 'Przygotowania do prac',
-                        tasks: [
-                            {
-                                name: 'Zabezpieczanie powierzchni',
-                                estimatedTime: 1.5,
-                                efficiency: 60,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Przygotowanie sprzętu',
-                                estimatedTime: 1,
-                                efficiency: null,
-                                unit: 'h',
-                                type: 'fixed',
-                                suggestedPeople: 1
-                            }
-                        ]
-                    },
-                    'przygotowanie-podloza': {
-                        name: 'Przygotowanie Podłoża',
-                        tasks: [
-                            {
-                                name: 'Zrywanie niewłaściwego podłoża',
-                                estimatedTime: 2,
-                                efficiency: 40,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Szlifowanie powierzchni',
-                                estimatedTime: 1.7, // 85m² / 50m²/h
-                                efficiency: 50,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Odkurzanie',
-                                estimatedTime: 0.35, // 85m² / 240m²/h
-                                efficiency: 240,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Nacinanie i łatanie spękań',
-                                estimatedTime: 1,
-                                efficiency: 80,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Łatanie/równanie punktowe',
-                                estimatedTime: 1.5,
-                                efficiency: 60,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Oklejanie zabezpieczające',
-                                estimatedTime: 0.75,
-                                efficiency: null,
-                                unit: 'h',
-                                type: 'fixed',
-                                suggestedPeople: 1
-                            }
-                        ]
-                    },
-                    'aplikacja-zywic': {
-                        name: 'Aplikacja żywic',
-                        tasks: [
-                            {
-                                name: 'Gruntowanie',
-                                estimatedTime: 1.7,
-                                efficiency: 50,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 2
-                            },
-                            {
-                                name: 'Warstwa dodatkowa',
-                                estimatedTime: 1.7,
-                                efficiency: 50,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 2
-                            },
-                            {
-                                name: 'Aplikacja warstwy wierzchniej',
-                                estimatedTime: 1.1,
-                                efficiency: 75,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 2
-                            },
-                            {
-                                name: 'Aplikacja lakieru',
-                                estimatedTime: 0.85,
-                                efficiency: 100,
-                                unit: 'm²/h',
-                                type: 'area',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Sprzątanie',
-                                estimatedTime: 0.75,
-                                efficiency: null,
-                                unit: 'h',
-                                type: 'fixed',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Cokoły',
-                                estimatedTime: 1.5,
-                                efficiency: 15,
-                                unit: 'mb/h',
-                                type: 'linear',
-                                suggestedPeople: 1
-                            },
-                            {
-                                name: 'Inne',
-                                estimatedTime: 1,
-                                efficiency: null,
-                                unit: 'h',
-                                type: 'fixed',
-                                suggestedPeople: 1
-                            }
-                        ]
-                    }
-                }
-            }
-        ];
-        
-        // Initialize
+        let timerIntervals = {};
+        let undoStack = [];
+        let maxUndoSteps = 10;
+
+        // Inicjalizacja aplikacji
         document.addEventListener('DOMContentLoaded', function() {
-            showLoadingIndicator();
-            initializeApp();
-        });
-        
-        async function initializeApp() {
-            try {
-                // Load data from storage
-                await loadDataFromStorage();
-                
-                // Initialize UI
-                updateCurrentDate();
-                renderDashboard();
-                
-                // Setup auto-backup
-                setupAutoBackup();
-                
-                // Add radio button listeners for import format
-                document.querySelectorAll('input[name="importFormat"]').forEach(radio => {
-                    radio.addEventListener('change', function() {
-                        const csvHelp = document.getElementById('csvHelp');
-                        if (this.value === 'csv') {
-                            csvHelp.style.display = 'block';
-                        } else {
-                            csvHelp.style.display = 'none';
-                        }
-                    });
-                });
-                
-                hideLoadingIndicator();
-                showSaveNotification('✅ Dane załadowane pomyślnie', 'success');
-                
-            } catch (error) {
-                console.error('Error initializing app:', error);
-                hideLoadingIndicator();
-                showSaveNotification('⚠️ Błąd ładowania danych - używam wartości domyślnych', 'warning');
-                loadDefaultProjects();
-                renderDashboard();
-            }
-        }
-        
-        // Storage functions
-        function saveDataToStorage() {
-            try {
-                const data = {
-                    version: '3.0',
-                    lastSaved: new Date().toISOString(),
-                    projects: projects,
-                    taskHistory: taskHistory,
-                    settings: appSettings,
-                    currentTimer: {
-                        ...currentTimer,
-                        // Don't save intervals or functions
-                        startTime: currentTimer.startTime,
-                        isRunning: false // Reset running state on save
-                    }
-                };
-                
-                localStorage.setItem('kierownikPro_data', JSON.stringify(data));
-                localStorage.setItem('kierownikPro_lastSave', Date.now().toString());
-                
-                // Visual feedback
-                showSaveNotification('💾 Zapisano', 'success');
-                
-                return true;
-            } catch (error) {
-                console.error('Error saving data:', error);
-                showSaveNotification('❌ Błąd zapisu', 'error');
-                return false;
-            }
-        }
-        
-        async function loadDataFromStorage() {
-            try {
-                const savedData = localStorage.getItem('kierownikPro_data');
-                
-                if (!savedData) {
-                    // No saved data - load defaults
-                    loadDefaultProjects();
-                    return;
-                }
-                
-                const data = JSON.parse(savedData);
-                
-                // Validate data structure
-                if (!data.version || !data.projects) {
-                    throw new Error('Invalid data structure');
-                }
-                
-                // Load data
-                projects = data.projects || [];
-                taskHistory = data.taskHistory || [];
-                appSettings = { ...appSettings, ...data.settings };
-                
-                // Ensure we have some projects
-                if (projects.length === 0) {
-                    loadDefaultProjects();
-                }
-                
-                // Update last save time
-                if (data.lastSaved) {
-                    const lastSave = new Date(data.lastSaved);
-                    console.log('Data loaded from:', lastSave.toLocaleString('pl-PL'));
-                }
-                
-                return true;
-            } catch (error) {
-                console.error('Error loading data:', error);
-                loadDefaultProjects();
-                throw error;
-            }
-        }
-        
-        function loadDefaultProjects() {
-            projects = [...defaultProjects];
-            taskHistory = [];
-            appSettings = {
-                autoBackup: true,
-                backupInterval: 24,
-                lastBackup: null
-            };
-        }
-        
-        // Auto-save after every significant action
-        function autoSave() {
-            if (appSettings.autoBackup) {
-                saveDataToStorage();
-            }
-        }
-        
-        // Setup automatic backup
-        function setupAutoBackup() {
-            if (!appSettings.autoBackup) return;
-            
-            const interval = appSettings.backupInterval * 60 * 60 * 1000; // hours to ms
-            
-            setInterval(() => {
-                const now = Date.now();
-                const lastBackup = appSettings.lastBackup || 0;
-                
-                if (now - lastBackup > interval) {
-                    createAutoBackup();
-                    appSettings.lastBackup = now;
-                    autoSave();
-                }
-            }, 60000); // Check every minute
-        }
-        
-        function createAutoBackup() {
-            try {
-                const backupData = {
-                    timestamp: new Date().toISOString(),
-                    projects: projects,
-                    taskHistory: taskHistory,
-                    settings: appSettings
-                };
-                
-                const backupKey = `kierownikPro_backup_${Date.now()}`;
-                localStorage.setItem(backupKey, JSON.stringify(backupData));
-                
-                // Keep only last 5 backups
-                cleanOldBackups();
-                
-                showSaveNotification('🔄 Backup automatyczny utworzony', 'info');
-            } catch (error) {
-                console.error('Auto backup failed:', error);
-            }
-        }
-        
-        function cleanOldBackups() {
-            const keys = Object.keys(localStorage).filter(key => key.startsWith('kierownikPro_backup_'));
-            
-            if (keys.length > 5) {
-                // Sort by timestamp and remove oldest
-                keys.sort();
-                for (let i = 0; i < keys.length - 5; i++) {
-                    localStorage.removeItem(keys[i]);
-                }
-            }
-        }
-        
-        // Visual feedback functions
-        function showLoadingIndicator() {
-            const indicator = document.createElement('div');
-            indicator.id = 'loadingIndicator';
-            indicator.innerHTML = `
-                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(102, 126, 234, 0.9); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-                    <div style="background: white; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-                        <div style="font-size: 24px; margin-bottom: 15px;">🏗️</div>
-                        <div style="font-size: 18px; font-weight: 600; color: #2d3748; margin-bottom: 10px;">KIEROWNIK PRO</div>
-                        <div style="font-size: 14px; color: #718096;">Ładowanie danych...</div>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(indicator);
-        }
-        
-        function hideLoadingIndicator() {
-            const indicator = document.getElementById('loadingIndicator');
-            if (indicator) {
-                indicator.remove();
-            }
-        }
-        
-        function showSaveNotification(message, type = 'success') {
-            // Remove existing notification
-            const existing = document.getElementById('saveNotification');
-            if (existing) existing.remove();
-            
-            const colors = {
-                success: '#16a34a',
-                error: '#dc2626',
-                warning: '#d97706',
-                info: '#3b82f6'
-            };
-            
-            const notification = document.createElement('div');
-            notification.id = 'saveNotification';
-            notification.innerHTML = message;
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: ${colors[type]};
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                font-size: 14px;
-                font-weight: 600;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                z-index: 1000;
-                animation: slideIn 0.3s ease;
-            `;
-            
-            // Add animation
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes slideIn {
-                    from { transform: translateX(100%); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-            `;
-            document.head.appendChild(style);
-            
-            document.body.appendChild(notification);
-            
-            // Auto-remove after 3 seconds
+            showNotification('Ładowanie danych...', 'info');
             setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.style.animation = 'slideIn 0.3s ease reverse';
-                    setTimeout(() => notification.remove(), 300);
-                }
-            }, 3000);
-        }
-        
-        function renderDashboard() {
-            const grid = document.getElementById('projects-grid');
-            grid.innerHTML = '';
-            
-            projects.forEach(project => {
-                const card = createProjectCard(project);
-                grid.appendChild(card);
-            });
-            
-            // Create navigation for all projects
-            createProjectNavigation();
-            
-            // Update storage info
-            updateStorageInfo();
-        }
-        
-        function updateStorageInfo() {
-            const elements = {
-                projectCount: document.getElementById('projectCount'),
-                taskHistoryCount: document.getElementById('taskHistoryCount'),
-                lastSaveTime: document.getElementById('lastSaveTime'),
-                dataSize: document.getElementById('dataSize')
-            };
-            
-            if (elements.projectCount) elements.projectCount.textContent = projects.length;
-            if (elements.taskHistoryCount) elements.taskHistoryCount.textContent = taskHistory.length;
-            
-            if (elements.lastSaveTime) {
-                const lastSave = localStorage.getItem('kierownikPro_lastSave');
-                if (lastSave) {
-                    const date = new Date(parseInt(lastSave));
-                    elements.lastSaveTime.textContent = date.toLocaleString('pl-PL');
-                } else {
-                    elements.lastSaveTime.textContent = 'Brak';
-                }
-            }
-            
-            if (elements.dataSize) {
-                const data = localStorage.getItem('kierownikPro_data');
-                if (data) {
-                    const sizeKB = Math.round(new Blob([data]).size / 1024);
-                    elements.dataSize.textContent = sizeKB + ' KB';
-                } else {
-                    elements.dataSize.textContent = '0 KB';
-                }
-            }
-        }
-        
-        function createProjectCard(project) {
-            const card = document.createElement('div');
-            card.className = 'project-card' + (project.imported ? ' imported' : '');
-            card.style.background = project.gradient;
-            card.onclick = () => selectProject(project.id);
-            
-            const statusClass = project.status === 'active' ? 'status-active' : 
-                               project.status === 'planning' ? 'status-planning' : 'status-imported';
-            
-            let infoContent = '';
-            if (project.status === 'active') {
-                infoContent = `
-                    <div class="info-item">
-                        <span class="info-label">Postęp ogólny</span>
-                        <span class="info-value">${project.progress}%</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Dziś zaplanowano</span>
-                        <span class="info-value">${project.todayTask}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Czas dziś</span>
-                        <span class="info-value project-time" data-project="${project.id}">0h 0m</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Status BHP</span>
-                        <span class="info-value">✅ OK</span>
-                    </div>
-                `;
-            } else if (project.status === 'planning') {
-                infoContent = `
-                    <div class="info-item">
-                        <span class="info-label">Start prac</span>
-                        <span class="info-value">${project.startDate}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Szac. czas</span>
-                        <span class="info-value">${project.estimatedTime}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Powierzchnia</span>
-                        <span class="info-value">${project.surface}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Status</span>
-                        <span class="info-value">Czeka na materiały</span>
-                    </div>
-                `;
-            } else {
-                infoContent = `
-                    <div class="info-item">
-                        <span class="info-label">Zadań</span>
-                        <span class="info-value">${project.taskCount || 0}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Powierzchnia</span>
-                        <span class="info-value">${project.surface}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Klient</span>
-                        <span class="info-value">${project.client || 'Brak'}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Status</span>
-                        <span class="info-value">Gotowy do pracy</span>
-                    </div>
-                `;
-            }
-            
-            card.innerHTML = `
-                <h3>${project.icon} ${project.name}</h3>
-                <div class="project-status ${statusClass}">${project.statusText}</div>
-                
-                <div class="project-info">
-                    ${infoContent}
-                </div>
-                
-                <div class="quick-actions">
-                    <a href="tel:${project.contact}" class="quick-action">📞 ${project.contactName || 'Kontakt'}</a>
-                    ${project.mapUrl ? `<a href="${project.mapUrl}" class="quick-action">🗺️ Nawigacja</a>` : ''}
-                    <span class="quick-action">⏰ Timer</span>
-                </div>
-            `;
-            
-            return card;
-        }
-        
-        function createProjectNavigation() {
-            const container = document.getElementById('project-nav-container');
-            const sectionsContainer = document.getElementById('project-sections-container');
-            
-            container.innerHTML = '';
-            sectionsContainer.innerHTML = '';
-            
-            projects.forEach((project, index) => {
-                // Create navigation inputs
-                const navInput = document.createElement('input');
-                navInput.type = 'radio';
-                navInput.name = 'main-nav';
-                navInput.id = `nav-${project.id}`;
-                navInput.className = 'nav-input';
-                container.appendChild(navInput);
-                
-                // Create project navigation
-                const projectNav = document.createElement('div');
-                projectNav.className = 'project-nav';
-                projectNav.id = `${project.id}-nav`;
-                
-                const navGrid = document.createElement('div');
-                navGrid.className = 'nav-grid';
-                
-                navGrid.innerHTML = `
-                    <button class="back-btn" onclick="backToDashboard()">← Dashboard</button>
-                    <button onclick="selectProjectSection('${project.id}', 'czas')">⏰ Czas</button>
-                    <button onclick="selectProjectSection('${project.id}', 'kalendarz')">📅 Kalendarz</button>
-                    <button onclick="selectProjectSection('${project.id}', 'materialy')">🎨 Materiały</button>
-                    <button onclick="selectProjectSection('${project.id}', 'sprzet')">🔧 Sprzęt</button>
-                    <button onclick="selectProjectSection('${project.id}', 'bhp')">⛑️ BHP</button>
-                    <button onclick="selectProjectSection('${project.id}', 'logistyka')">🚚 Logistyka</button>
-                `;
-                
-                projectNav.appendChild(navGrid);
-                container.appendChild(projectNav);
-                
-                // Create project sections
-                createProjectSections(project, sectionsContainer);
-                
-                // Add navigation style updates
-                navInput.addEventListener('change', function() {
-                    if (this.checked) {
-                        // Hide all project navs
-                        document.querySelectorAll('.project-nav').forEach(nav => nav.style.display = 'none');
-                        // Show this project nav
-                        document.getElementById(`${project.id}-nav`).style.display = 'block';
-                        // Set current project
-                        currentProject = project;
-                    }
-                });
-            });
-        }
-        
-        function createProjectSections(project, container) {
-            // Default section
-            const defaultSection = document.createElement('div');
-            defaultSection.className = 'section project-section';
-            defaultSection.id = `section-${project.id}-default`;
-            defaultSection.innerHTML = `
-                <h2>${project.icon} ${project.name} - Wybierz sekcję</h2>
-                <p style="margin-bottom: 20px; color: #718096;">Kliknij na sekcję aby zobaczyć szczegóły projektu.</p>
-                
-                <div class="section-tiles">
-                    <div class="section-tile" onclick="selectProjectSection('${project.id}', 'czas')">
-                        <div style="font-size: 24px; margin-bottom: 10px;">⏰</div>
-                        <h4>Czas pracy</h4>
-                        <p style="font-size: 12px; color: #718096;">Timer, działania, historia</p>
-                    </div>
-                    <div class="section-tile" onclick="selectProjectSection('${project.id}', 'kalendarz')">
-                        <div style="font-size: 24px; margin-bottom: 10px;">📅</div>
-                        <h4>Kalendarz</h4>
-                        <p style="font-size: 12px; color: #718096;">Harmonogram, zmiany</p>
-                    </div>
-                    <div class="section-tile" onclick="selectProjectSection('${project.id}', 'materialy')">
-                        <div style="font-size: 24px; margin-bottom: 10px;">🎨</div>
-                        <h4>Materiały</h4>
-                        <p style="font-size: 12px; color: #718096;">System, proporcje, zużycie</p>
-                    </div>
-                    <div class="section-tile" onclick="selectProjectSection('${project.id}', 'sprzet')">
-                        <div style="font-size: 24px; margin-bottom: 10px;">🔧</div>
-                        <h4>Sprzęt</h4>
-                        <p style="font-size: 12px; color: #718096;">Checklist, tracking</p>
-                    </div>
-                    <div class="section-tile" onclick="selectProjectSection('${project.id}', 'bhp')">
-                        <div style="font-size: 24px; margin-bottom: 10px;">⛑️</div>
-                        <h4>BHP</h4>
-                        <p style="font-size: 12px; color: #718096;">Bezpieczeństwo, środki ochrony</p>
-                    </div>
-                    <div class="section-tile" onclick="selectProjectSection('${project.id}', 'logistyka')">
-                        <div style="font-size: 24px; margin-bottom: 10px;">🚚</div>
-                        <h4>Logistyka</h4>
-                        <p style="font-size: 12px; color: #718096;">Dostęp, prąd, składowanie</p>
-                    </div>
-                </div>
-            `;
-            container.appendChild(defaultSection);
-            
-            // Timer section
-            const timerSection = document.createElement('div');
-            timerSection.className = 'section project-section';
-            timerSection.id = `section-${project.id}-czas`;
-            timerSection.innerHTML = createTimerSection(project);
-            container.appendChild(timerSection);
-            
-            // Other sections (placeholder)
-            const sections = ['kalendarz', 'materialy', 'sprzet', 'bhp', 'logistyka'];
-            sections.forEach(sectionName => {
-                const section = document.createElement('div');
-                section.className = 'section project-section';
-                section.id = `section-${project.id}-${sectionName}`;
-                section.innerHTML = `
-                    <h2>${getSectionIcon(sectionName)} ${getSectionName(sectionName)} - ${project.name}</h2>
-                    <p>Funkcjonalność ${getSectionName(sectionName).toLowerCase()} będzie dodana w kolejnych wersjach.</p>
-                `;
-                container.appendChild(section);
-            });
-        }
-        
-        function createTimerSection(project) {
-            return `
-                <h2>⏰ Timer Pracy - ${project.name}</h2>
-                
-                <div class="timer-container">
-                    <!-- Selektor projektów/zadań -->
-                    <div class="project-selector">
-                        <h3>🎯 Wybierz zadanie do wykonania</h3>
-                        
-                        <div class="form-group">
-                            <label>📋 Kategoria:</label>
-                            <select id="taskCategory-${project.id}" onchange="updateProjectTasks('${project.id}')">
-                                <option value="">-- Wybierz kategorię --</option>
-                                ${Object.entries(project.categories || {}).map(([key, category]) => 
-                                    `<option value="${key}">${category.name}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>⏰ Zadanie:</label>
-                            <select id="taskSelect-${project.id}" onchange="selectProjectTask('${project.id}')" disabled>
-                                <option value="">-- Najpierw wybierz kategorię --</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- Timer display -->
-                    <div class="timer-display">
-                        <div class="timer-status" id="timerStatus-${project.id}">Gotowy do rozpoczęcia</div>
-                        <div id="currentTask-${project.id}" style="font-size: 20px; margin-bottom: 10px;">Wybierz zadanie aby rozpocząć</div>
-                        <div class="timer-time" id="timerDisplay-${project.id}">00:00:00</div>
-                        <div class="timer-buttons">
-                            <button id="startBtn-${project.id}" class="timer-btn" onclick="startTimer('${project.id}')" disabled>▶️ Start</button>
-                            <button id="pauseBtn-${project.id}" class="timer-btn" onclick="pauseTimer('${project.id}')" disabled>⏸️ Pauza</button>
-                            <button id="stopBtn-${project.id}" class="timer-btn" onclick="stopTimer('${project.id}')" disabled>✅ Zakończ</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Statystyki dnia -->
-                    <div class="task-history">
-                        <h3>📊 Podsumowanie dziś - <span id="currentDate-${project.id}"></span></h3>
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <div class="stat-value" id="totalTime-${project.id}">0:00</div>
-                                <div class="stat-label">Łączny czas</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value" id="completedTasks-${project.id}">0</div>
-                                <div class="stat-label">Ukończone</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value" id="activeTasks-${project.id}">0</div>
-                                <div class="stat-label">W trakcie</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value" id="avgTime-${project.id}">0:00</div>
-                                <div class="stat-label">Średnia/zadanie</div>
-                            </div>
-                        </div>
-                        
-                        <div style="display: flex; gap: 10px; margin: 20px 0;">
-                            <button class="btn" onclick="exportProjectData('${project.id}')">📊 Eksport CSV</button>
-                            <button class="btn btn-secondary" onclick="exportDetailedProjectData('${project.id}')">📋 Eksport szczegółowy</button>
-                            <button class="btn btn-warning" onclick="clearProjectHistory('${project.id}')">🗑️ Wyczyść historię</button>
-                        </div>
-                        
-                        <h4 style="margin-top: 30px; margin-bottom: 15px;">📋 Historia działań</h4>
-                        <div id="historyList-${project.id}">
-                            <p style="color: #718096; text-align: center; padding: 20px;">Brak zarejestrowanych działań</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-        
-        function getSectionIcon(sectionName) {
-            const icons = {
-                'kalendarz': '📅',
-                'materialy': '🎨',
-                'sprzet': '🔧',
-                'bhp': '⛑️',
-                'logistyka': '🚚'
-            };
-            return icons[sectionName] || '📋';
-        }
-        
-        function getSectionName(sectionName) {
-            const names = {
-                'kalendarz': 'Kalendarz',
-                'materialy': 'Materiały',
-                'sprzet': 'Sprzęt',
-                'bhp': 'BHP',
-                'logistyka': 'Logistyka'
-            };
-            return names[sectionName] || sectionName;
-        }
-        
-        function selectProject(projectId) {
-            // Hide dashboard
-            document.getElementById('nav-dashboard').checked = false;
-            
-            // Select project
-            document.getElementById(`nav-${projectId}`).checked = true;
-            
-            // Show project navigation
-            document.querySelectorAll('.project-nav').forEach(nav => nav.style.display = 'none');
-            document.getElementById(`${projectId}-nav`).style.display = 'block';
-            
-            // Show default project section
-            document.querySelectorAll('.section').forEach(section => section.style.display = 'none');
-            document.getElementById(`section-${projectId}-default`).style.display = 'block';
-            
-            // Set current project
-            currentProject = projects.find(p => p.id === projectId);
-            
-            // Update timer for this project
-            updateCurrentDate(projectId);
-            updateProjectStats(projectId);
-            updateProjectHistoryDisplay(projectId);
-        }
-        
-        function selectProjectSection(projectId, sectionName) {
-            // Hide all sections
-            document.querySelectorAll('.section').forEach(section => section.style.display = 'none');
-            
-            // Show selected section
-            document.getElementById(`section-${projectId}-${sectionName}`).style.display = 'block';
-            
-            if (sectionName === 'czas') {
-                updateCurrentDate(projectId);
-                updateProjectStats(projectId);
-                updateProjectHistoryDisplay(projectId);
-            }
-        }
-        
-        function backToDashboard() {
-            goToDashboard();
-        }
-        
-        function goToDashboard() {
-            // Hide all project navs and sections
-            document.querySelectorAll('.project-nav').forEach(nav => nav.style.display = 'none');
-            document.querySelectorAll('.section').forEach(section => section.style.display = 'none');
-            
-            // Show dashboard
-            document.getElementById('nav-dashboard').checked = true;
-            document.getElementById('section-dashboard').style.display = 'block';
-            
-            // Hide import section
-            document.getElementById('import-section').style.display = 'none';
-            
+                loadData();
+                showDashboard();
+            }, 1000);
+        });
+
+        // Funkcje nawigacji
+        function showDashboard() {
+            document.getElementById('dashboardView').style.display = 'block';
+            document.getElementById('projectView').style.display = 'none';
+            document.getElementById('loadingScreen').style.display = 'none';
             currentProject = null;
+            renderProjects();
+            updateDataInfo();
         }
-        
-        function toggleImportSection() {
-            const importSection = document.getElementById('import-section');
-            if (importSection.style.display === 'none') {
-                importSection.style.display = 'block';
-                showSaveNotification('📥 Panel importu otwarty', 'info');
-            } else {
-                importSection.style.display = 'none';
-                // Clear import data when closing
-                document.getElementById('importProjectData').value = '';
-            }
+
+        function showProject(projectId) {
+            currentProject = projects.find(p => p.id === projectId);
+            if (!currentProject) return;
+
+            document.getElementById('dashboardView').style.display = 'none';
+            document.getElementById('projectView').style.display = 'block';
+            document.getElementById('projectTitle').textContent = currentProject.name;
+            
+            populateTaskSelector();
+            renderActiveTasks();
+            updateProjectStats();
+            renderHistory();
+            showTab('time');
         }
-        
-        function updateProjectTasks(projectId) {
-            const project = projects.find(p => p.id === projectId);
-            const category = document.getElementById(`taskCategory-${projectId}`).value;
-            const taskSelect = document.getElementById(`taskSelect-${projectId}`);
+
+        function showTab(tabName) {
+            // Ukryj wszystkie taby
+            document.querySelectorAll('.timer-section').forEach(tab => {
+                tab.classList.remove('active');
+            });
             
-            taskSelect.innerHTML = '<option value="">-- Wybierz zadanie --</option>';
+            // Ukryj wszystkie przyciski
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
             
-            if (category && project.categories && project.categories[category]) {
-                taskSelect.disabled = false;
-                const tasks = project.categories[category].tasks;
+            // Pokaż wybrany tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Funkcje zarządzania projektami
+        function renderProjects() {
+            const container = document.getElementById('projectsContainer');
+            container.innerHTML = '';
+
+            projects.forEach(project => {
+                const projectCard = document.createElement('div');
+                projectCard.className = `project-card ${project.status || 'active'}`;
+                projectCard.onclick = () => showProject(project.id);
+
+                const projectHistory = taskHistory.filter(t => t.projectId === project.id);
+                const totalTime = projectHistory.reduce((sum, t) => sum + t.duration, 0);
+                const tasksCompleted = projectHistory.length;
+                const activeTasksCount = activeTasks.filter(t => t.projectId === project.id).length;
+
+                projectCard.innerHTML = `
+                    <div>
+                        <h3>${project.icon || '🏗️'} ${project.name}</h3>
+                        <div class="project-meta">
+                            ${project.client ? `Klient: ${project.client}` : ''}
+                            ${project.area ? `${project.client ? ' | ' : ''}Powierzchnia: ${project.area}m²` : ''}
+                            <span class="project-status">${getStatusText(project.status)}</span>
+                        </div>
+                    </div>
+                    <div class="project-stats">
+                        <span>🎯 ${tasksCompleted} zadań</span>
+                        <span>⏱️ ${formatTime(totalTime)}</span>
+                        <span>🔄 ${activeTasksCount} aktywnych</span>
+                    </div>
+                `;
+
+                container.appendChild(projectCard);
+            });
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'active': 'Aktywny',
+                'planned': 'Planowany',
+                'closed': 'Zamknięty',
+                'imported': 'Zaimportowany'
+            };
+            return statusMap[status] || status;
+        }
+
+        // Funkcje wielozadaniowości
+        function populateTaskSelector() {
+            const select = document.getElementById('taskSelect');
+            select.innerHTML = '<option value="">🎯 Wybierz zadanie do wykonania</option>';
+
+            if (!currentProject || !currentProject.categories) return;
+
+            Object.entries(currentProject.categories).forEach(([category, tasks]) => {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = category;
                 
                 tasks.forEach(task => {
                     const option = document.createElement('option');
-                    option.value = typeof task === 'string' ? task : task.name;
-                    
-                    // Create enhanced display with estimates
-                    let displayText = typeof task === 'string' ? task : task.name;
-                    
-                    if (typeof task === 'object' && task.estimatedTime) {
-                        const estimates = calculateTaskEstimate(task, project);
-                        displayText = `${task.name} | 📊 ${estimates.displayText}`;
-                    }
-                    
-                    option.textContent = displayText;
-                    option.dataset.taskData = JSON.stringify(task);
-                    taskSelect.appendChild(option);
+                    option.value = task.name;
+                    option.textContent = task.name;
+                    option.dataset.category = category;
+                    option.dataset.estimation = task.estimatedTime || 0;
+                    option.dataset.efficiency = task.efficiency || '';
+                    option.dataset.unit = task.unit || '';
+                    option.dataset.type = task.type || 'fixed';
+                    option.dataset.teamSize = task.teamSize || 1;
+                    optgroup.appendChild(option);
                 });
-            } else {
-                taskSelect.disabled = true;
-                taskSelect.innerHTML = '<option value="">-- Najpierw wybierz kategorię --</option>';
-            }
-        }
-        
-        function calculateTaskEstimate(task, project) {
-            if (typeof task === 'string') {
-                return { displayText: '', estimatedMinutes: 60, efficiency: null };
-            }
-            
-            let estimatedMinutes = task.estimatedTime * 60; // convert hours to minutes
-            let displayText = '';
-            
-            // For area-based tasks, calculate based on project surface
-            if (task.type === 'area' && task.efficiency && project.surfaceNumber) {
-                const calculatedHours = project.surfaceNumber / task.efficiency;
-                if (task.suggestedPeople > 1) {
-                    const adjustedHours = calculatedHours / task.suggestedPeople;
-                    estimatedMinutes = adjustedHours * 60;
-                    displayText = `${formatDurationHours(adjustedHours)} | ${task.efficiency}${task.unit} | 👥 ${task.suggestedPeople} os.`;
-                } else {
-                    estimatedMinutes = calculatedHours * 60;
-                    displayText = `${formatDurationHours(calculatedHours)} | ${task.efficiency}${task.unit}`;
-                }
-            } else if (task.type === 'fixed') {
-                displayText = `${formatDurationHours(task.estimatedTime)} | Czas stały`;
-                if (task.suggestedPeople) {
-                    displayText += ` | 👥 ${task.suggestedPeople} os.`;
-                }
-            } else {
-                displayText = `${formatDurationHours(task.estimatedTime)}`;
-            }
-            
-            return {
-                displayText,
-                estimatedMinutes: Math.round(estimatedMinutes),
-                efficiency: task.efficiency,
-                suggestedPeople: task.suggestedPeople || 1,
-                type: task.type || 'fixed'
-            };
-        }
-        
-        function formatDurationHours(hours) {
-            if (hours < 1) {
-                return `${Math.round(hours * 60)}m`;
-            } else if (hours < 10) {
-                const h = Math.floor(hours);
-                const m = Math.round((hours - h) * 60);
-                return m > 0 ? `${h}h ${m}m` : `${h}h`;
-            } else {
-                return `${Math.round(hours * 10) / 10}h`;
-            }
-        }
-        
-        function selectProjectTask(projectId) {
-            const taskSelect = document.getElementById(`taskSelect-${projectId}`);
-            const selectedOption = taskSelect.options[taskSelect.selectedIndex];
-            const task = selectedOption.value;
-            const startBtn = document.getElementById(`startBtn-${projectId}`);
-            
-            if (task) {
-                // Get task data from option
-                let taskData = null;
-                try {
-                    taskData = JSON.parse(selectedOption.dataset.taskData || '{}');
-                } catch (e) {
-                    taskData = { name: task, estimatedTime: 1, type: 'fixed' };
-                }
                 
-                const project = projects.find(p => p.id === projectId);
-                const estimates = calculateTaskEstimate(taskData, project);
-                
-                currentTimer.currentTask = task;
-                currentTimer.projectId = projectId;
-                currentTimer.taskEstimates = estimates;
-                currentTimer.taskData = taskData;
-                
-                // Update task display with estimates
-                const taskElement = document.getElementById(`currentTask-${projectId}`);
-                taskElement.innerHTML = `
-                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${task}</div>
-                    <div style="font-size: 14px; opacity: 0.9;">
-                        📊 Plan: ${estimates.displayText}
-                    </div>
-                `;
-                
-                startBtn.disabled = false;
-                document.getElementById(`timerStatus-${projectId}`).textContent = 'Gotowy do rozpoczęcia';
-            } else {
-                currentTimer.currentTask = null;
-                currentTimer.projectId = null;
-                currentTimer.taskEstimates = null;
-                currentTimer.taskData = null;
-                
-                document.getElementById(`currentTask-${projectId}`).innerHTML = 'Wybierz zadanie aby rozpocząć';
-                startBtn.disabled = true;
-                document.getElementById(`timerStatus-${projectId}`).textContent = 'Wybierz zadanie';
-            }
+                select.appendChild(optgroup);
+            });
         }
-        
-        function startTimer(projectId) {
-            if (!currentTimer.currentTask || currentTimer.projectId !== projectId) return;
+
+        function updateTaskEstimation() {
+            const select = document.getElementById('taskSelect');
+            const teamSize = parseInt(document.getElementById('teamSize').value) || 1;
+            const estimation = document.getElementById('taskEstimation');
             
-            if (currentTimer.isPaused) {
-                // Resume from pause
-                currentTimer.startTime = Date.now() - currentTimer.pausedTime;
-                currentTimer.isPaused = false;
-            } else {
-                // New start
-                currentTimer.startTime = Date.now();
-                currentTimer.pausedTime = 0;
-            }
-            
-            currentTimer.isRunning = true;
-            document.getElementById(`timerStatus-${projectId}`).textContent = 'W trakcie realizacji';
-            
-            // Update button states
-            document.getElementById(`startBtn-${projectId}`).disabled = true;
-            document.getElementById(`pauseBtn-${projectId}`).disabled = false;
-            document.getElementById(`stopBtn-${projectId}`).disabled = false;
-            
-            // Start the interval
-            timerInterval = setInterval(() => updateTimerDisplay(projectId), 1000);
-        }
-        
-        function pauseTimer(projectId) {
-            if (!currentTimer.isRunning || currentTimer.projectId !== projectId) return;
-            
-            currentTimer.isRunning = false;
-            currentTimer.isPaused = true;
-            currentTimer.pausedTime = Date.now() - currentTimer.startTime;
-            
-            clearInterval(timerInterval);
-            
-            document.getElementById(`timerStatus-${projectId}`).textContent = 'Wstrzymany';
-            
-            // Update button states
-            document.getElementById(`startBtn-${projectId}`).disabled = false;
-            document.getElementById(`pauseBtn-${projectId}`).disabled = true;
-            document.getElementById(`stopBtn-${projectId}`).disabled = false;
-        }
-        
-        function stopTimer(projectId) {
-            if (!currentTimer.currentTask || currentTimer.projectId !== projectId) return;
-            
-            // Calculate final time
-            let finalTime;
-            if (currentTimer.isRunning) {
-                finalTime = Date.now() - currentTimer.startTime;
-            } else if (currentTimer.isPaused) {
-                finalTime = currentTimer.pausedTime;
-            } else {
+            if (!select.value) {
+                estimation.innerHTML = '';
                 return;
             }
-            
-            // Calculate performance metrics
-            let performanceData = {};
-            if (currentTimer.taskEstimates) {
-                const estimatedMs = currentTimer.taskEstimates.estimatedMinutes * 60 * 1000;
-                const actualMinutes = finalTime / (1000 * 60);
-                const estimatedMinutes = currentTimer.taskEstimates.estimatedMinutes;
-                const variance = ((actualMinutes - estimatedMinutes) / estimatedMinutes) * 100;
+
+            const option = select.selectedOptions[0];
+            const baseTime = parseFloat(option.dataset.estimation) || 0;
+            const efficiency = option.dataset.efficiency || '';
+            const unit = option.dataset.unit || '';
+            const type = option.dataset.type || 'fixed';
+            const suggestedTeam = parseInt(option.dataset.teamSize) || 1;
+
+            let estimatedTime = baseTime;
+            let timeText = '';
+
+            if (type === 'area' && currentProject.area) {
+                // Zadanie powierzchniowe
+                const area = currentProject.area;
+                const efficiencyNum = parseFloat(efficiency) || 1;
+                estimatedTime = area / efficiencyNum;
                 
-                performanceData = {
-                    estimatedTime: estimatedMs,
-                    estimatedMinutes: estimatedMinutes,
-                    actualMinutes: actualMinutes,
-                    variance: Math.round(variance),
-                    efficiency: currentTimer.taskEstimates.efficiency,
-                    suggestedPeople: currentTimer.taskEstimates.suggestedPeople,
-                    type: currentTimer.taskEstimates.type
-                };
+                // Jeśli zadanie może być wykonywane przez więcej osób
+                if (efficiency.includes('osób') || efficiency.includes('osoby')) {
+                    // Czas już obliczony dla zespołu
+                    timeText = `📊 ${formatTime(estimatedTime * 3600000)} dla ${suggestedTeam} osób`;
+                } else {
+                    // Czas dla jednej osoby, można przyspieszyć
+                    estimatedTime = estimatedTime / teamSize;
+                    timeText = `📊 ${formatTime(estimatedTime * 3600000)} | 📈 ${efficiency} | 👥 ${teamSize} osób`;
+                }
+            } else {
+                // Zadanie stałe
+                if (teamSize > suggestedTeam) {
+                    estimatedTime = baseTime / (teamSize / suggestedTeam);
+                }
+                timeText = `📊 ${formatTime(baseTime * 3600000)} | 👥 ${teamSize} osób`;
             }
+
+            estimation.innerHTML = `
+                <span>${timeText}</span>
+                ${suggestedTeam > 1 ? `<span>💡 Sugerowane: ${suggestedTeam} osób</span>` : ''}
+            `;
+        }
+
+        function addNewTask() {
+            const select = document.getElementById('taskSelect');
+            const teamSize = parseInt(document.getElementById('teamSize').value) || 1;
             
-            // Add to history with performance data
-            const taskRecord = {
-                task: currentTimer.currentTask,
-                projectId: projectId,
-                projectName: projects.find(p => p.id === projectId)?.name || 'Unknown',
-                category: document.getElementById(`taskCategory-${projectId}`).value,
-                startTime: new Date(currentTimer.startTime),
+            if (!select.value || !currentProject) return;
+
+            const option = select.selectedOptions[0];
+            const taskName = select.value;
+            const category = option.dataset.category;
+
+            // Sprawdź czy zadanie już jest aktywne
+            const existingTask = activeTasks.find(t => 
+                t.projectId === currentProject.id && 
+                t.task === taskName && 
+                t.status === 'active'
+            );
+
+            if (existingTask) {
+                showNotification('⚠️ To zadanie jest już aktywne!', 'warning');
+                return;
+            }
+
+            // Utwórz punkt undo przed dodaniem zadania
+            createUndoPoint(`Rozpoczęcie zadania: ${taskName}`);
+
+            // Oblicz szacowany czas
+            const baseTime = parseFloat(option.dataset.estimation) || 0;
+            const type = option.dataset.type || 'fixed';
+            const efficiency = option.dataset.efficiency || '';
+            const suggestedTeam = parseInt(option.dataset.teamSize) || 1;
+            
+            let estimatedTime = baseTime;
+            if (type === 'area' && currentProject.area) {
+                const area = currentProject.area;
+                const efficiencyNum = parseFloat(efficiency) || 1;
+                estimatedTime = area / efficiencyNum;
+                
+                if (!efficiency.includes('osób') && !efficiency.includes('osoby')) {
+                    estimatedTime = estimatedTime / teamSize;
+                }
+            } else if (teamSize > suggestedTeam) {
+                estimatedTime = baseTime / (teamSize / suggestedTeam);
+            }
+
+            // Utwórz nowe zadanie
+            const taskId = Date.now().toString();
+            const newTask = {
+                id: taskId,
+                projectId: currentProject.id,
+                task: taskName,
+                category: category,
+                startTime: Date.now(),
+                teamSize: teamSize,
+                estimatedTime: estimatedTime * 3600000, // w milisekundach
+                efficiency: efficiency,
+                status: 'active',
+                elapsedTime: 0
+            };
+
+            activeTasks.push(newTask);
+            
+            // Rozpocznij timer
+            startTaskTimer(taskId);
+            
+            // Wyczyść selector
+            select.value = '';
+            document.getElementById('teamSize').value = 1;
+            document.getElementById('taskEstimation').innerHTML = '';
+            
+            renderActiveTasks();
+            updateProjectStats();
+            saveDataSilent();
+            
+            showNotification(`✅ Rozpoczęto zadanie: ${taskName}`, 'success');
+        }
+
+        function startTaskTimer(taskId) {
+            if (timerIntervals[taskId]) {
+                clearInterval(timerIntervals[taskId]);
+            }
+
+            timerIntervals[taskId] = setInterval(() => {
+                const task = activeTasks.find(t => t.id === taskId);
+                if (task && task.status === 'active') {
+                    task.elapsedTime = Date.now() - task.startTime;
+                    updateTaskDisplay(taskId);
+                    updateProjectStats();
+                }
+            }, 1000);
+        }
+
+        function pauseTask(taskId) {
+            const task = activeTasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            if (task.status === 'active') {
+                task.status = 'paused';
+                task.elapsedTime = Date.now() - task.startTime;
+                clearInterval(timerIntervals[taskId]);
+                showNotification(`⏸️ Zadanie wstrzymane: ${task.task}`, 'info');
+            } else {
+                task.status = 'active';
+                task.startTime = Date.now() - task.elapsedTime;
+                startTaskTimer(taskId);
+                showNotification(`▶️ Zadanie wznowione: ${task.task}`, 'success');
+            }
+
+            updateTaskDisplay(taskId);
+            updateProjectStats();
+            saveDataSilent();
+        }
+
+        function stopTask(taskId) {
+            const task = activeTasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            // Utwórz punkt undo przed zakończeniem zadania
+            createUndoPoint(`Zakończenie zadania: ${task.task}`);
+
+            // Zatrzymaj timer
+            clearInterval(timerIntervals[taskId]);
+            
+            // Oblicz finalny czas
+            const finalTime = task.status === 'active' ? 
+                Date.now() - task.startTime : 
+                task.elapsedTime;
+            
+            // Oblicz wydajność
+            const efficiency = task.estimatedTime > 0 ? 
+                (task.estimatedTime / finalTime) * 100 : 100;
+            
+            let performanceText = '🎯 Zgodnie z planem';
+            if (efficiency > 110) {
+                performanceText = `🚀 Szybciej o ${Math.round(efficiency - 100)}%`;
+            } else if (efficiency < 90) {
+                performanceText = `⏰ Dłużej o ${Math.round(100 - efficiency)}%`;
+            }
+
+            // Dodaj do historii
+            taskHistory.push({
+                id: Date.now().toString(),
+                projectId: task.projectId,
+                task: task.task,
+                category: task.category,
                 duration: finalTime,
-                date: new Date().toDateString(),
-                performance: performanceData
-            };
+                estimatedTime: task.estimatedTime,
+                teamSize: task.teamSize,
+                efficiency: efficiency,
+                performanceText: performanceText,
+                date: new Date().toLocaleDateString('pl-PL'),
+                time: new Date().toLocaleTimeString('pl-PL')
+            });
+
+            // Usuń z aktywnych zadań
+            activeTasks = activeTasks.filter(t => t.id !== taskId);
             
-            taskHistory.push(taskRecord);
+            renderActiveTasks();
+            updateProjectStats();
+            renderHistory();
+            saveDataSilent();
             
-            // Auto-save after adding task
-            autoSave();
-            
-            // Reset timer
-            resetTimer(projectId);
-            
-            // Update displays
-            updateProjectStats(projectId);
-            updateProjectHistoryDisplay(projectId);
-            updateDashboard();
-            
-            // Show performance feedback
-            if (performanceData.variance !== undefined) {
-                let feedbackMessage = '';
-                if (Math.abs(performanceData.variance) <= 10) {
-                    feedbackMessage = '🎯 Idealny czas! Zgodnie z planem';
-                } else if (performanceData.variance < -10) {
-                    feedbackMessage = `🚀 Szybciej o ${Math.abs(performanceData.variance)}%!`;
-                } else if (performanceData.variance > 10) {
-                    feedbackMessage = `⏰ Dłużej o ${performanceData.variance}%`;
-                }
-                
-                if (feedbackMessage) {
-                    showSaveNotification(feedbackMessage, 'info');
-                }
-            }
+            showNotification(`✅ Zakończono: ${task.task} | ${performanceText}`, 'success');
         }
-        
-        function resetTimer(projectId) {
-            currentTimer.isRunning = false;
-            currentTimer.isPaused = false;
-            currentTimer.startTime = null;
-            currentTimer.pausedTime = 0;
-            currentTimer.elapsedTime = 0;
-            currentTimer.projectId = null;
-            currentTimer.taskEstimates = null;
-            currentTimer.taskData = null;
-            
-            clearInterval(timerInterval);
-            
-            document.getElementById(`timerDisplay-${projectId}`).textContent = '00:00:00';
-            document.getElementById(`timerStatus-${projectId}`).textContent = 'Zakończone';
-            
-            // Reset task display
-            const taskElement = document.getElementById(`currentTask-${projectId}`);
-            if (taskElement && currentTimer.currentTask) {
-                taskElement.innerHTML = `
-                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${currentTimer.currentTask}</div>
-                    <div style="font-size: 14px; opacity: 0.7;">
-                        ✅ Zadanie ukończone
+
+        function renderActiveTasks() {
+            const container = document.getElementById('activeTasksContainer');
+            container.innerHTML = '';
+
+            const projectActiveTasks = activeTasks.filter(t => t.projectId === currentProject.id);
+
+            if (projectActiveTasks.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
+                        <h3 style="color: rgba(255,255,255,0.9);">🎯 Brak aktywnych zadań</h3>
+                        <p>Wybierz zadanie z listy poniżej, aby rozpocząć pracę</p>
                     </div>
                 `;
+                return;
             }
-            
-            // Reset button states
-            document.getElementById(`startBtn-${projectId}`).disabled = false;
-            document.getElementById(`pauseBtn-${projectId}`).disabled = true;
-            document.getElementById(`stopBtn-${projectId}`).disabled = true;
-            
-            setTimeout(() => {
-                if (currentTimer.currentTask) {
-                    document.getElementById(`timerStatus-${projectId}`).textContent = 'Gotowy do rozpoczęcia';
-                    // Restore task display with estimates
-                    const taskSelect = document.getElementById(`taskSelect-${projectId}`);
-                    if (taskSelect.value) {
-                        selectProjectTask(projectId);
-                    }
-                }
-            }, 2000);
+
+            projectActiveTasks.forEach(task => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = `task-timer ${task.status === 'paused' ? 'paused' : ''}`;
+                taskDiv.id = `task-${task.id}`;
+                
+                const elapsedTime = task.status === 'active' ? 
+                    Date.now() - task.startTime : 
+                    task.elapsedTime;
+                
+                const progress = task.estimatedTime > 0 ? 
+                    Math.min((elapsedTime / task.estimatedTime) * 100, 100) : 0;
+                
+                const remainingTime = Math.max(task.estimatedTime - elapsedTime, 0);
+                
+                taskDiv.innerHTML = `
+                    <div class="task-header">
+                        <div class="task-name">${task.task}</div>
+                        <div class="task-controls">
+                            <button class="control-btn" onclick="pauseTask('${task.id}')" title="${task.status === 'active' ? 'Wstrzymaj zadanie' : 'Wznów zadanie'}">
+                                ${task.status === 'active' ? '⏸️' : '▶️'}
+                            </button>
+                            <button class="control-btn" onclick="stopTask('${task.id}')" title="Zakończ zadanie">⏹️</button>
+                        </div>
+                    </div>
+                    
+                    <div class="task-info">
+                        <div class="info-item">
+                            <div class="info-label">Czas pracy</div>
+                            <div class="info-value">${formatTime(elapsedTime)}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Pozostało</div>
+                            <div class="info-value">${formatTime(remainingTime)}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="task-progress">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>Postęp: ${Math.round(progress)}%</span>
+                            <span>Plan: ${formatTime(task.estimatedTime)}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="team-info">
+                        <span>👥 Ekipa: ${task.teamSize} osób</span>
+                        <span>📂 ${task.category}</span>
+                        <span style="margin-left: auto;">${task.status === 'active' ? '🟢 Aktywne' : '⏸️ Wstrzymane'}</span>
+                    </div>
+                `;
+                
+                container.appendChild(taskDiv);
+            });
         }
-        
-        function updateTimerDisplay(projectId) {
-            if (!currentTimer.isRunning || !currentTimer.startTime || currentTimer.projectId !== projectId) return;
+
+        function updateTaskDisplay(taskId) {
+            const taskElement = document.getElementById(`task-${taskId}`);
+            if (!taskElement) return;
+
+            const task = activeTasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            const elapsedTime = task.status === 'active' ? 
+                Date.now() - task.startTime : 
+                task.elapsedTime;
             
-            const elapsed = Date.now() - currentTimer.startTime;
-            const elapsedMinutes = elapsed / (1000 * 60);
+            const progress = task.estimatedTime > 0 ? 
+                Math.min((elapsedTime / task.estimatedTime) * 100, 100) : 0;
             
-            // Update time display
-            document.getElementById(`timerDisplay-${projectId}`).textContent = formatTime(elapsed);
+            const remainingTime = Math.max(task.estimatedTime - elapsedTime, 0);
+
+            // Aktualizuj tylko dynamiczne elementy
+            taskElement.querySelector('.info-value').textContent = formatTime(elapsedTime);
+            taskElement.querySelectorAll('.info-value')[1].textContent = formatTime(remainingTime);
+            taskElement.querySelector('.progress-fill').style.width = `${progress}%`;
+            taskElement.querySelector('.task-progress span').textContent = `Postęp: ${Math.round(progress)}%`;
             
-            // Update status with progress information
-            if (currentTimer.taskEstimates) {
-                const estimates = currentTimer.taskEstimates;
-                const estimatedMs = estimates.estimatedMinutes * 60 * 1000;
-                const remainingMs = Math.max(0, estimatedMs - elapsed);
-                const progressPercent = Math.min(100, (elapsed / estimatedMs) * 100);
+            // Aktualizuj przycisk play/pause
+            const playPauseBtn = taskElement.querySelector('.control-btn');
+            playPauseBtn.innerHTML = task.status === 'active' ? '⏸️' : '▶️';
+            playPauseBtn.title = task.status === 'active' ? 'Wstrzymaj zadanie' : 'Wznów zadanie';
+            
+            // Aktualizuj status w team-info
+            const teamInfo = taskElement.querySelector('.team-info');
+            const statusSpan = teamInfo.querySelector('span:last-child');
+            statusSpan.textContent = task.status === 'active' ? '🟢 Aktywne' : '⏸️ Wstrzymane';
+            
+            // Aktualizuj klasę kontenera
+            taskElement.className = `task-timer ${task.status === 'paused' ? 'paused' : ''}`;
+        }
+
+        function updateProjectStats() {
+            if (!currentProject) return;
+
+            const projectActiveTasks = activeTasks.filter(t => t.projectId === currentProject.id);
+            const projectHistory = taskHistory.filter(t => t.projectId === currentProject.id);
+            
+            // Aktywne zadania
+            document.getElementById('activeTasksCount').textContent = projectActiveTasks.length;
+            
+            // Całkowita liczba pracowników
+            const totalWorkers = projectActiveTasks.reduce((sum, task) => sum + task.teamSize, 0);
+            document.getElementById('totalWorkersCount').textContent = totalWorkers;
+            
+            // Czas dzisiaj
+            const today = new Date().toLocaleDateString('pl-PL');
+            const todayTasks = projectHistory.filter(t => t.date === today);
+            const todayTime = todayTasks.reduce((sum, t) => sum + t.duration, 0);
+            document.getElementById('todayTimeCount').textContent = formatTime(todayTime);
+            
+            // Średnia wydajność
+            const avgEfficiency = projectHistory.length > 0 ? 
+                projectHistory.reduce((sum, t) => sum + t.efficiency, 0) / projectHistory.length : 100;
+            document.getElementById('efficiencyAverage').textContent = Math.round(avgEfficiency) + '%';
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyContainer');
+            
+            if (!currentProject) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const projectHistory = taskHistory
+                .filter(t => t.projectId === currentProject.id)
+                .sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time));
+
+            if (projectHistory.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.7);">
+                        Brak ukończonych zadań
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+            
+            projectHistory.forEach(task => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
                 
-                let statusText = 'W trakcie realizacji';
-                let progressIcon = '⏱️';
+                historyItem.innerHTML = `
+                    <div>
+                        <div class="history-task">${task.task}</div>
+                        <div class="history-details">
+                            ${task.date} ${task.time} | ${task.category} | 
+                            👥 ${task.teamSize} osób | ⏱️ ${formatTime(task.duration)}
+                        </div>
+                    </div>
+                    <div class="history-details">
+                        ${task.performanceText}
+                    </div>
+                `;
                 
-                // Determine progress status
-                if (progressPercent > 110) {
-                    statusText = 'Przekroczenie czasu';
-                    progressIcon = '⚠️';
-                } else if (progressPercent > 90) {
-                    statusText = 'Końcówka zadania';
-                    progressIcon = '🏁';
-                } else if (elapsedMinutes < estimates.estimatedMinutes * 0.5) {
-                    statusText = 'W dobrym tempie';
-                    progressIcon = '✅';
+                container.appendChild(historyItem);
+            });
+        }
+
+        // Event listenery
+        document.getElementById('taskSelect').addEventListener('change', updateTaskEstimation);
+        document.getElementById('teamSize').addEventListener('input', updateTaskEstimation);
+
+        // Funkcje importu projektów
+        function toggleImport() {
+            const importSection = document.getElementById('importSection');
+            importSection.classList.toggle('show');
+        }
+
+        function closeImport() {
+            document.getElementById('importSection').classList.remove('show');
+            document.getElementById('importData').value = '';
+        }
+
+        function importProject() {
+            const importData = document.getElementById('importData').value.trim();
+            const importType = document.querySelector('input[name="importType"]:checked').value;
+            
+            if (!importData) {
+                showNotification('⚠️ Wklej dane projektu', 'warning');
+                return;
+            }
+
+            try {
+                // Utwórz punkt undo przed importem
+                createUndoPoint('Import nowego projektu');
+
+                let projectData;
+                
+                if (importType === 'json') {
+                    projectData = JSON.parse(importData);
                 } else {
-                    statusText = 'W trakcie realizacji';
-                    progressIcon = '⏱️';
+                    projectData = parseCSV(importData);
                 }
+
+                const newProject = {
+                    id: Date.now().toString(),
+                    name: projectData.name || 'Nowy projekt',
+                    client: projectData.client || '',
+                    area: projectData.area || 0,
+                    status: 'imported',
+                    categories: projectData.categories || {},
+                    icon: projectData.icon || '📥',
+                    metadata: projectData.metadata || {}
+                };
+
+                projects.push(newProject);
+                saveData();
+                renderProjects();
+                updateDataInfo();
+                closeImport();
                 
-                // Update current task display with live progress
-                const taskElement = document.getElementById(`currentTask-${projectId}`);
-                if (taskElement) {
-                    taskElement.innerHTML = `
-                        <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${currentTimer.currentTask}</div>
-                        <div style="font-size: 14px; opacity: 0.9; margin-bottom: 6px;">
-                            📊 Plan: ${estimates.displayText}
-                        </div>
-                        <div style="font-size: 13px; opacity: 0.8;">
-                            ${progressIcon} Pozostało: ${formatTime(remainingMs)} | Postęp: ${Math.round(progressPercent)}%
-                        </div>
-                    `;
-                }
-                
-                document.getElementById(`timerStatus-${projectId}`).textContent = statusText;
+                showNotification(`✅ Projekt "${newProject.name}" został zaimportowany`, 'success');
+            } catch (error) {
+                showNotification('❌ Błąd importu: ' + error.message, 'error');
             }
         }
-        
-        function updateCurrentDate(projectId) {
-            const now = new Date();
-            const options = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+
+        function parseCSV(csvData) {
+            const lines = csvData.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            
+            if (lines.length < 2) {
+                throw new Error('CSV musi zawierać co najmniej 2 linie (nagłówek + dane)');
+            }
+
+            const tasks = [];
+            let projectName = 'Nowy projekt';
+            let client = '';
+            let area = 0;
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                const taskData = {};
+                
+                headers.forEach((header, index) => {
+                    taskData[header] = values[index] || '';
+                });
+
+                if (taskData.Projekt) projectName = taskData.Projekt;
+                if (taskData.Klient) client = taskData.Klient;
+                if (taskData.Powierzchnia) area = parseInt(taskData.Powierzchnia) || 0;
+
+                if (taskData.Zadanie) {
+                    tasks.push({
+                        name: taskData.Zadanie,
+                        type: taskData.Typ || 'fixed',
+                        efficiency: taskData.Wydajność || taskData['Wydajność'] || '',
+                        unit: taskData.Jednostka || '',
+                        estimatedTime: parseFloat(taskData['Szacowany czas (h)'] || taskData['Szacowany czas']) || 0,
+                        teamSize: taskData.Wydajność && 
+                                 (taskData.Wydajność.includes('osoby') || taskData.Wydajność.includes('osób')) ? 
+                                 parseInt(taskData.Wydajność.match(/\d+/)) || 1 : 1
+                    });
+                }
+            }
+
+            // Kategoryzuj zadania
+            const categories = {
+                'Przygotowanie': [],
+                'Przygotowanie Podłoża': [],
+                'Aplikacja żywic': [],
+                'Wykończenie': []
+            };
+
+            tasks.forEach(task => {
+                const taskName = task.name.toLowerCase();
+                
+                if (taskName.includes('pakowanie') || taskName.includes('rozładunek') || 
+                    taskName.includes('transport') || taskName.includes('przygotowanie')) {
+                    categories['Przygotowanie'].push(task);
+                } else if (taskName.includes('szlifowanie') || taskName.includes('odkurzanie') || 
+                          taskName.includes('czyszczenie') || taskName.includes('oklejanie')) {
+                    categories['Przygotowanie Podłoża'].push(task);
+                } else if (taskName.includes('gruntowanie') || taskName.includes('wylanie') || 
+                          taskName.includes('nakładanie') || taskName.includes('aplikacja')) {
+                    categories['Aplikacja żywic'].push(task);
+                } else {
+                    categories['Wykończenie'].push(task);
+                }
+            });
+
+            return {
+                name: projectName,
+                client: client,
+                area: area,
+                categories: categories
+            };
+        }
+
+        // Funkcje zarządzania danymi
+        function createUndoPoint(actionName) {
+            const undoData = {
+                action: actionName,
+                timestamp: Date.now(),
+                projects: JSON.parse(JSON.stringify(projects)),
+                activeTasks: JSON.parse(JSON.stringify(activeTasks)),
+                taskHistory: JSON.parse(JSON.stringify(taskHistory))
             };
             
-            if (projectId) {
-                const element = document.getElementById(`currentDate-${projectId}`);
-                if (element) {
-                    element.textContent = now.toLocaleDateString('pl-PL', options);
+            undoStack.push(undoData);
+            
+            // Ogranicz rozmiar stosu undo
+            if (undoStack.length > maxUndoSteps) {
+                undoStack.shift();
+            }
+        }
+
+        function undoLastAction() {
+            if (undoStack.length === 0) {
+                showNotification('⚠️ Brak akcji do cofnięcia', 'warning');
+                return;
+            }
+
+            const lastAction = undoStack.pop();
+            
+            // Zatrzymaj wszystkie timery
+            Object.values(timerIntervals).forEach(interval => clearInterval(interval));
+            timerIntervals = {};
+            
+            // Przywróć stan
+            projects = lastAction.projects;
+            activeTasks = lastAction.activeTasks;
+            taskHistory = lastAction.taskHistory;
+            
+            // Zrestartuj aktywne timery
+            activeTasks.forEach(task => {
+                if (task.status === 'active') {
+                    startTaskTimer(task.id);
+                }
+            });
+            
+            saveDataSilent();
+            
+            if (currentProject) {
+                currentProject = projects.find(p => p.id === currentProject.id);
+                if (currentProject) {
+                    renderActiveTasks();
+                    updateProjectStats();
+                    renderHistory();
+                } else {
+                    showDashboard();
                 }
             } else {
-                // Update all project dates
-                projects.forEach(project => {
-                    const element = document.getElementById(`currentDate-${project.id}`);
-                    if (element) {
-                        element.textContent = now.toLocaleDateString('pl-PL', options);
-                    }
-                });
+                renderProjects();
             }
+            
+            updateDataInfo();
+            showNotification(`↩️ Cofnięto: ${lastAction.action}`, 'success');
         }
-        
-        function updateProjectStats(projectId) {
-            const today = new Date().toDateString();
-            const projectTasks = taskHistory.filter(task => task.date === today && task.projectId === projectId);
-            
-            const totalTime = projectTasks.reduce((sum, task) => sum + task.duration, 0);
-            const completedTasks = projectTasks.length;
-            const activeTasks = (currentTimer.isRunning && currentTimer.projectId === projectId) ? 1 : 0;
-            const avgTime = completedTasks > 0 ? totalTime / completedTasks : 0;
-            
-            const elements = {
-                totalTime: document.getElementById(`totalTime-${projectId}`),
-                completedTasks: document.getElementById(`completedTasks-${projectId}`),
-                activeTasks: document.getElementById(`activeTasks-${projectId}`),
-                avgTime: document.getElementById(`avgTime-${projectId}`)
+
+        function saveData() {
+            const data = {
+                version: '4.1',
+                lastSaved: new Date().toISOString(),
+                projects: projects,
+                activeTasks: activeTasks,
+                taskHistory: taskHistory,
+                undoStack: undoStack
             };
-            
-            if (elements.totalTime) elements.totalTime.textContent = formatDuration(totalTime);
-            if (elements.completedTasks) elements.completedTasks.textContent = completedTasks;
-            if (elements.activeTasks) elements.activeTasks.textContent = activeTasks;
-            if (elements.avgTime) elements.avgTime.textContent = formatDuration(avgTime);
-        }
-        
-        function updateProjectHistoryDisplay(projectId) {
-            const historyList = document.getElementById(`historyList-${projectId}`);
-            if (!historyList) return;
-            
-            const today = new Date().toDateString();
-            const projectTasks = taskHistory.filter(task => task.date === today && task.projectId === projectId).reverse();
-            
-            if (projectTasks.length === 0) {
-                historyList.innerHTML = '<p style="color: #718096; text-align: center; padding: 20px;">Brak zarejestrowanych działań</p>';
-                return;
-            }
-            
-            historyList.innerHTML = projectTasks.map(task => {
-                let performanceInfo = '';
-                let performanceColor = '#718096';
-                
-                if (task.performance && task.performance.variance !== undefined) {
-                    const variance = task.performance.variance;
-                    if (Math.abs(variance) <= 10) {
-                        performanceInfo = ` | 🎯 Zgodnie z planem`;
-                        performanceColor = '#16a34a';
-                    } else if (variance < -10) {
-                        performanceInfo = ` | 🚀 Szybciej o ${Math.abs(variance)}%`;
-                        performanceColor = '#16a34a';
-                    } else if (variance > 10) {
-                        performanceInfo = ` | ⏰ +${variance}%`;
-                        performanceColor = '#d97706';
-                    }
-                }
-                
-                return `
-                    <div class="history-item">
-                        <div class="task-info">
-                            <div class="task-name">${task.task}</div>
-                            <div class="task-details">
-                                ${task.startTime.toLocaleTimeString('pl-PL', {hour: '2-digit', minute: '2-digit'})} - 
-                                ${task.category || 'Brak kategorii'}
-                                <span style="color: ${performanceColor}; font-weight: 600;">${performanceInfo}</span>
-                            </div>
-                        </div>
-                        <div class="task-duration">${formatDuration(task.duration)}</div>
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        function updateDashboard() {
-            const today = new Date().toDateString();
-            
-            projects.forEach(project => {
-                const projectTasks = taskHistory.filter(task => task.date === today && task.projectId === project.id);
-                const totalTime = projectTasks.reduce((sum, task) => sum + task.duration, 0);
-                
-                const timeElement = document.querySelector(`.project-time[data-project="${project.id}"]`);
-                if (timeElement) {
-                    timeElement.textContent = formatDuration(totalTime);
-                }
-            });
-        }
-        
-        function formatTime(milliseconds) {
-            const seconds = Math.floor(milliseconds / 1000);
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            const secs = seconds % 60;
-            
-            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-        
-        function formatDuration(milliseconds) {
-            const totalMinutes = Math.floor(milliseconds / (1000 * 60));
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-            
-            if (hours > 0) {
-                return `${hours}h ${minutes}m`;
-            }
-            return `${minutes}m`;
-        }
-        
-        function saveHistory() {
-            // Note: Using in-memory storage only - data will not persist across sessions
-            // This is due to Claude.ai artifact limitations
-        }
-        
-        function loadHistory() {
-            // Note: Using in-memory storage only - data will not persist across sessions
-            // In a real implementation, this would load from localStorage
-        }
-        
-        function exportProjectData(projectId) {
-            const today = new Date().toDateString();
-            const projectTasks = taskHistory.filter(task => task.date === today && task.projectId === projectId);
-            const project = projects.find(p => p.id === projectId);
-            
-            let csv = 'Zadanie,Kategoria,Czas rozpoczęcia,Czas trwania (min),Plan (min),Odchylenie (%),Wydajność,Data,Projekt\n';
-            
-            projectTasks.forEach(task => {
-                const duration = Math.round(task.duration / (1000 * 60));
-                const estimatedMin = task.performance?.estimatedMinutes || '-';
-                const variance = task.performance?.variance !== undefined ? task.performance.variance + '%' : '-';
-                const efficiency = task.performance?.efficiency || '-';
-                
-                csv += `"${task.task}","${task.category}","${task.startTime.toLocaleTimeString('pl-PL')}",${duration},${estimatedMin},${variance},"${efficiency}","${task.date}","${task.projectName}"\n`;
-            });
-            
-            downloadCSV(csv, `${project?.name || 'project'}-data-${new Date().toISOString().split('T')[0]}.csv`);
-        }
-        
-        function exportDetailedProjectData(projectId) {
-            const projectTasks = taskHistory.filter(task => task.projectId === projectId);
-            const project = projects.find(p => p.id === projectId);
-            
-            let csv = 'Zadanie,Kategoria,Czas rozpoczęcia,Czas zakończenia,Czas trwania (min),Plan (min),Odchylenie (%),Wydajność,Sugerowane osoby,Data,Projekt\n';
-            
-            projectTasks.forEach(task => {
-                const duration = Math.round(task.duration / (1000 * 60));
-                const endTime = new Date(task.startTime.getTime() + task.duration);
-                const estimatedMin = task.performance?.estimatedMinutes || '-';
-                const variance = task.performance?.variance !== undefined ? task.performance.variance + '%' : '-';
-                const efficiency = task.performance?.efficiency || '-';
-                const suggestedPeople = task.performance?.suggestedPeople || '-';
-                
-                csv += `"${task.task}","${task.category}","${task.startTime.toLocaleTimeString('pl-PL')}","${endTime.toLocaleTimeString('pl-PL')}",${duration},${estimatedMin},${variance},"${efficiency}",${suggestedPeople},"${task.date}","${task.projectName}"\n`;
-            });
-            
-            downloadCSV(csv, `${project?.name || 'project'}-detailed-${new Date().toISOString().split('T')[0]}.csv`);
-        }
-        
-        function clearProjectHistory(projectId) {
-            if (confirm('Czy na pewno chcesz wyczyścić historię zadań tego projektu?')) {
-                taskHistory = taskHistory.filter(task => task.projectId !== projectId);
-                
-                // Auto-save after clearing history
-                autoSave();
-                
-                updateProjectStats(projectId);
-                updateProjectHistoryDisplay(projectId);
-                updateDashboard();
-                
-                showSaveNotification('🗑️ Historia projektu wyczyszczona', 'warning');
-            }
-        }
-        
-        function manualBackup() {
+
             try {
-                const backupData = {
-                    version: '3.0',
-                    timestamp: new Date().toISOString(),
-                    projects: projects,
-                    taskHistory: taskHistory,
-                    settings: appSettings,
-                    exportType: 'manual_backup'
-                };
-                
-                const filename = `kierownik-pro-backup-${new Date().toISOString().split('T')[0]}.json`;
-                downloadJSON(backupData, filename);
-                
-                showSaveNotification('💾 Backup pobrany pomyślnie', 'success');
+                localStorage.setItem('kierownikProData', JSON.stringify(data));
+                showNotification('💾 Zapisano', 'success');
             } catch (error) {
-                console.error('Manual backup failed:', error);
-                showSaveNotification('❌ Błąd tworzenia backup', 'error');
+                showNotification('❌ Błąd zapisu: ' + error.message, 'error');
             }
         }
-        
-        function restoreFromFile() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            
-            input.onchange = function(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        
-                        // Validate backup data
-                        if (!data.version || !data.projects || !data.taskHistory) {
-                            throw new Error('Nieprawidłowy format pliku backup');
-                        }
-                        
-                        // Confirm restore
-                        if (!confirm('Czy na pewno chcesz przywrócić dane z pliku? Obecne dane zostaną zastąpione.')) {
-                            return;
-                        }
-                        
-                        // Restore data
-                        projects = data.projects;
-                        taskHistory = data.taskHistory;
-                        appSettings = { ...appSettings, ...data.settings };
-                        
-                        // Save to storage
-                        saveDataToStorage();
-                        
-                        // Re-render dashboard
-                        renderDashboard();
-                        
-                        showSaveNotification('✅ Dane przywrócone pomyślnie', 'success');
-                        
-                    } catch (error) {
-                        console.error('Restore failed:', error);
-                        showSaveNotification('❌ Błąd przywracania danych', 'error');
-                    }
-                };
-                reader.readAsText(file);
+
+        function saveDataSilent() {
+            const data = {
+                version: '4.1',
+                lastSaved: new Date().toISOString(),
+                projects: projects,
+                activeTasks: activeTasks,
+                taskHistory: taskHistory,
+                undoStack: undoStack
             };
-            
-            input.click();
-        }
-        
-        function downloadJSON(data, filename) {
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', filename);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-        
-        function exportAllData() {
+
             try {
-                // Export report data (not backup - different format)
-                const reportData = {
-                    exportDate: new Date().toISOString(),
-                    projectsSummary: projects.map(p => ({
-                        name: p.name,
-                        status: p.status,
-                        taskCount: p.taskCount || 0,
-                        surface: p.surface
-                    })),
-                    taskHistorySummary: {
-                        totalTasks: taskHistory.length,
-                        totalTime: taskHistory.reduce((sum, task) => sum + task.duration, 0),
-                        byProject: projects.map(project => {
-                            const projectTasks = taskHistory.filter(task => task.projectId === project.id);
-                            return {
-                                projectName: project.name,
-                                tasksCount: projectTasks.length,
-                                totalTime: projectTasks.reduce((sum, task) => sum + task.duration, 0)
-                            };
-                        })
-                    },
-                    version: '3.0'
-                };
-                
-                const filename = `kierownik-pro-raport-${new Date().toISOString().split('T')[0]}.json`;
-                downloadJSON(reportData, filename);
-                
-                showSaveNotification('📊 Raport wyeksportowany', 'success');
+                localStorage.setItem('kierownikProData', JSON.stringify(data));
+                // Brak powiadomienia przy cichym zapisie
             } catch (error) {
-                console.error('Export failed:', error);
-                showSaveNotification('❌ Błąd eksportu', 'error');
+                showNotification('❌ Błąd zapisu: ' + error.message, 'error');
             }
         }
-        
-        function clearAllData() {
-            if (confirm('Czy na pewno chcesz wyczyścić wszystkie dane? Ta operacja jest nieodwracalna.\n\nDane zostaną zastąpione projektami domyślnymi.')) {
-                taskHistory = [];
-                loadDefaultProjects();
-                
-                // Save to storage
-                autoSave();
-                
-                // Re-render
-                renderDashboard();
-                
-                showSaveNotification('🗑️ Wszystkie dane wyczyszczone', 'warning');
-            }
-        }
-        
-        function downloadCSV(csv, filename) {
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', filename);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-        
-        function importProject() {
-            const projectData = document.getElementById('importProjectData').value.trim();
-            
-            if (!projectData) {
-                alert('Proszę wkleić kod JSON projektu.');
-                return;
-            }
-            
+
+        function loadData() {
             try {
-                const project = JSON.parse(projectData);
+                const savedData = localStorage.getItem('kierownikProData');
                 
-                // Validate project structure
-                if (!project.name || !project.tasks) {
-                    throw new Error('Nieprawidłowa struktura projektu');
-                }
-                
-                addImportedProject(project, 'json');
-                document.getElementById('importProjectData').value = '';
-                
-                // Close import section after successful import
-                document.getElementById('import-section').style.display = 'none';
-                
-            } catch (error) {
-                alert('Błąd podczas importowania projektu. Sprawdź czy kod JSON jest prawidłowy.');
-                console.error('Import error:', error);
-            }
-        }
-        
-        function importCSVProject() {
-            const csvData = document.getElementById('importProjectData').value.trim();
-            
-            if (!csvData) {
-                alert('Proszę wkleić dane CSV projektu.');
-                return;
-            }
-            
-            try {
-                // Parse CSV data
-                const lines = csvData.split('\n').filter(line => line.trim());
-                if (lines.length < 2) {
-                    throw new Error('CSV musi zawierać nagłówek i przynajmniej jeden wiersz danych');
-                }
-                
-                // Parse header
-                const header = lines[0].split(',').map(col => col.trim().replace(/"/g, ''));
-                
-                // Parse data rows
-                const tasks = [];
-                let projectName = '';
-                let clientName = '';
-                let surface = '';
-                
-                for (let i = 1; i < lines.length; i++) {
-                    const values = parseCSVLine(lines[i]);
-                    if (values.length < 4) continue;
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    projects = data.projects || [];
+                    activeTasks = data.activeTasks || [];
+                    taskHistory = data.taskHistory || [];
+                    undoStack = data.undoStack || [];
                     
-                    const row = {};
-                    header.forEach((col, index) => {
-                        if (values[index]) {
-                            row[col] = values[index].replace(/"/g, '').trim();
+                    // Zrestartuj aktywne timery
+                    activeTasks.forEach(task => {
+                        if (task.status === 'active') {
+                            startTaskTimer(task.id);
                         }
                     });
                     
-                    // Get project info from first row
-                    if (i === 1) {
-                        projectName = row['Projekt'] || 'Projekt zaimportowany';
-                        clientName = row['Klient'] || '';
-                        surface = row['Powierzchnia'] || '';
-                    }
-                    
-                    // Create task object
-                    const task = {
-                        name: row['Zadanie'] || `Zadanie ${i}`,
-                        type: row['Typ'] || 'fixed',
-                        estimatedTime: parseFloat(row['Szacowany czas (h)']) || 1,
-                        efficiency: row['Wydajność'] || '',
-                        unit: row['Jednostka'] || 'h',
-                        category: determineCategory(row['Zadanie'] || '')
-                    };
-                    
-                    tasks.push(task);
-                }
-                
-                if (tasks.length === 0) {
-                    throw new Error('Nie znaleziono zadań w danych CSV');
-                }
-                
-                // Create project object
-                const project = {
-                    name: projectName,
-                    client: clientName,
-                    surface: surface + 'm²',
-                    tasks: tasks,
-                    importedFrom: 'csv',
-                    importDate: new Date().toISOString()
-                };
-                
-                addImportedProject(project, 'csv');
-                document.getElementById('importProjectData').value = '';
-                
-                // Close import section after successful import
-                document.getElementById('import-section').style.display = 'none';
-                
-            } catch (error) {
-                alert(`❌ Błąd podczas importowania CSV:\n\n${error.message}\n\nSprawdź format danych i spróbuj ponownie.`);
-                console.error('CSV Import error:', error);
-            }
-        }
-        
-        function addImportedProject(projectData, importType) {
-            // Extract surface number for calculations
-            let surfaceNumber = 0;
-            if (projectData.surface) {
-                const surfaceStr = projectData.surface.toString();
-                surfaceNumber = parseFloat(surfaceStr.replace(/[^\d.]/g, '')) || 0;
-            }
-            
-            // Create new project object
-            const newProject = {
-                id: 'imported-' + Date.now(),
-                name: projectData.name,
-                location: projectData.location || projectData.client || 'Lokalizacja zaimportowana',
-                icon: '📥',
-                status: 'imported',
-                statusText: '🟢 ZAIMPORTOWANY',
-                surface: projectData.surface || '0m²',
-                surfaceNumber: surfaceNumber,
-                client: projectData.client || 'Zaimportowany klient',
-                taskCount: projectData.tasks ? projectData.tasks.length : 0,
-                contact: '+48123456789',
-                contactName: 'Kontakt',
-                gradient: 'linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%)',
-                imported: true,
-                importedFrom: importType,
-                categories: {}
-            };
-            
-            // Convert tasks to categories with estimates
-            if (projectData.tasks) {
-                const categoriesMap = {};
-                
-                projectData.tasks.forEach(task => {
-                    const category = task.category || 'główne';
-                    if (!categoriesMap[category]) {
-                        categoriesMap[category] = {
-                            name: category.charAt(0).toUpperCase() + category.slice(1),
-                            tasks: []
-                        };
-                    }
-                    
-                    // Create enhanced task object with estimates
-                    const enhancedTask = {
-                        name: task.name,
-                        estimatedTime: task.estimatedTime || 1,
-                        efficiency: task.efficiency ? parseFloat(task.efficiency) : null,
-                        unit: task.unit || 'h',
-                        type: task.type || 'fixed',
-                        suggestedPeople: 1 // default for imported tasks
-                    };
-                    
-                    // Try to guess suggested people from efficiency description
-                    if (task.efficiency && typeof task.efficiency === 'string') {
-                        if (task.efficiency.includes('2 osoby') || task.efficiency.includes('2 osób')) {
-                            enhancedTask.suggestedPeople = 2;
-                        } else if (task.efficiency.includes('3 osoby') || task.efficiency.includes('3 osób')) {
-                            enhancedTask.suggestedPeople = 3;
-                        }
-                        
-                        // Extract numeric efficiency
-                        const efficiencyMatch = task.efficiency.match(/(\d+)/);
-                        if (efficiencyMatch) {
-                            enhancedTask.efficiency = parseFloat(efficiencyMatch[1]);
-                        }
-                    }
-                    
-                    categoriesMap[category].tasks.push(enhancedTask);
-                });
-                
-                newProject.categories = categoriesMap;
-            }
-            
-            // Add to projects array
-            projects.push(newProject);
-            
-            // Auto-save after adding project
-            autoSave();
-            
-            // Re-render dashboard
-            renderDashboard();
-            
-            let successMessage = `✅ Projekt "${projectData.name}" został zaimportowany pomyślnie!\n\n`;
-            successMessage += `📊 Zadań: ${newProject.taskCount}\n`;
-            if (projectData.client) successMessage += `👥 Klient: ${projectData.client}\n`;
-            if (projectData.surface) successMessage += `📐 Powierzchnia: ${projectData.surface}\n`;
-            successMessage += `\nNowy projekt pojawił się na dashboardzie jako oddzielny kafelik.`;
-            successMessage += `\n\n🎯 Zadania zawierają szacowane czasy i wydajności dla lepszego planowania pracy.`;
-            
-            alert(successMessage);
-        }
-        
-        function parseCSVLine(line) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current);
-                    current = '';
+                    showNotification('✅ Dane załadowane pomyślnie', 'success');
                 } else {
-                    current += char;
+                    loadDefaultProjects();
+                    showNotification('🆕 Utworzono nowy workspace', 'info');
                 }
+            } catch (error) {
+                showNotification('⚠️ Błąd ładowania danych - załadowano domyślne', 'warning');
+                loadDefaultProjects();
             }
-            
-            result.push(current);
-            return result;
         }
-        
-        function determineCategory(taskName) {
-            const task = taskName.toLowerCase();
+
+        function loadDefaultProjects() {
+            projects = [
+                {
+                    id: 'default1',
+                    name: 'Dom Kowalski',
+                    client: 'Jan Kowalski',
+                    area: 120,
+                    status: 'active',
+                    icon: '🏠',
+                    categories: {
+                        'Przygotowanie Podłoża': [
+                            { name: 'Szlifowanie powierzchni', type: 'area', efficiency: '50', unit: 'm²/h', estimatedTime: 2.4, teamSize: 1 },
+                            { name: 'Odkurzanie powierzchni', type: 'area', efficiency: '240', unit: 'm²/h', estimatedTime: 0.5, teamSize: 1 }
+                        ],
+                        'Aplikacja żywic': [
+                            { name: 'Gruntowanie powierzchni', type: 'area', efficiency: '50', unit: 'm²/h', estimatedTime: 1.2, teamSize: 2 },
+                            { name: 'Nakładanie żywicy', type: 'area', efficiency: '30', unit: 'm²/h', estimatedTime: 4.0, teamSize: 2 }
+                        ]
+                    }
+                },
+                {
+                    id: 'default2',
+                    name: 'Mieszkanie Nowak',
+                    client: 'Anna Nowak',
+                    area: 80,
+                    status: 'planned',
+                    icon: '🏢',
+                    categories: {
+                        'Przygotowanie Podłoża': [
+                            { name: 'Demontaż starej posadzki', type: 'area', efficiency: '20', unit: 'm²/h', estimatedTime: 4.0, teamSize: 1 },
+                            { name: 'Wyrównanie powierzchni', type: 'area', efficiency: '15', unit: 'm²/h', estimatedTime: 5.3, teamSize: 1 }
+                        ],
+                        'Aplikacja żywic': [
+                            { name: 'Gruntowanie', type: 'area', efficiency: '40', unit: 'm²/h', estimatedTime: 2.0, teamSize: 1 },
+                            { name: 'Wylanie żywicy', type: 'area', efficiency: '25', unit: 'm²/h', estimatedTime: 3.2, teamSize: 2 }
+                        ]
+                    }
+                }
+            ];
+        }
+
+        function updateDataInfo() {
+            document.getElementById('projectCount').textContent = `Projekty: ${projects.length}`;
+            document.getElementById('taskCount').textContent = `Historia: ${taskHistory.length}`;
+            document.getElementById('undoCount').textContent = `Cofnij: ${undoStack.length}`;
             
-            if (task.includes('pakowanie') || task.includes('rozładunek') || task.includes('stanowisk')) {
-                return 'przygotowania';
-            } else if (task.includes('szlifowanie') || task.includes('odkurzanie') || task.includes('powierzchni')) {
-                return 'przygotowanie-podloza';
-            } else if (task.includes('gruntowanie') || task.includes('wylanie') || task.includes('koloru') || task.includes('żywic')) {
-                return 'aplikacja-zywic';
-            } else if (task.includes('oklejanie') || task.includes('zabezpieczeń') || task.includes('malowanie')) {
-                return 'wykończenie';
+            try {
+                const data = localStorage.getItem('kierownikProData');
+                const lastSave = data ? JSON.parse(data).lastSaved : null;
+                document.getElementById('lastSave').textContent = lastSave ? 
+                    'Ostatni zapis: ' + new Date(lastSave).toLocaleString('pl-PL') : 'Ostatni zapis: Brak';
+                
+                const sizeKB = data ? Math.round(data.length / 1024) : 0;
+                document.getElementById('dataSize').textContent = sizeKB + ' KB';
+            } catch (error) {
+                document.getElementById('lastSave').textContent = 'Ostatni zapis: Błąd';
+                document.getElementById('dataSize').textContent = '0 KB';
+            }
+        }
+
+        function backupData() {
+            const data = {
+                version: '4.1',
+                exported: new Date().toISOString(),
+                projects: projects,
+                activeTasks: activeTasks,
+                taskHistory: taskHistory,
+                undoStack: undoStack
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kierownik-pro-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification('📥 Backup utworzony', 'success');
+        }
+
+        function restoreData(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (data.projects) {
+                        projects = data.projects;
+                        activeTasks = data.activeTasks || [];
+                        taskHistory = data.taskHistory || [];
+                        undoStack = data.undoStack || [];
+                        
+                        // Zrestartuj aktywne timery
+                        activeTasks.forEach(task => {
+                            if (task.status === 'active') {
+                                startTaskTimer(task.id);
+                            }
+                        });
+                        
+                        saveDataSilent();
+                        renderProjects();
+                        updateDataInfo();
+                        
+                        showNotification('✅ Dane przywrócone pomyślnie', 'success');
+                    } else {
+                        throw new Error('Nieprawidłowy format pliku');
+                    }
+                } catch (error) {
+                    showNotification('❌ Błąd przywracania: ' + error.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportProjectData() {
+            if (taskHistory.length === 0) {
+                showNotification('⚠️ Brak danych do eksportu', 'warning');
+                return;
+            }
+
+            const csvHeader = 'Projekt,Zadanie,Kategoria,Data,Czas,Czas pracy (min),Plan (min),Odchylenie (%),Zespół,Wydajność\n';
+            const csvData = taskHistory.map(task => {
+                const project = projects.find(p => p.id === task.projectId);
+                const projectName = project ? project.name : 'Nieznany projekt';
+                const durationMin = Math.round(task.duration / 60000);
+                const planMin = Math.round(task.estimatedTime / 60000);
+                const deviation = task.efficiency ? (task.efficiency - 100).toFixed(1) : '0';
+                
+                return `"${projectName}","${task.task}","${task.category}","${task.date}","${task.time}",${durationMin},${planMin},${deviation},${task.teamSize},"${task.performanceText}"`;
+            }).join('\n');
+
+            const blob = new Blob([csvHeader + csvData], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kierownik-pro-export-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification('📊 Dane wyeksportowane', 'success');
+        }
+
+        function clearAllData() {
+            if (confirm('⚠️ Czy na pewno chcesz usunąć wszystkie dane? Tej operacji nie można cofnąć.')) {
+                // Zatrzymaj wszystkie timery
+                Object.values(timerIntervals).forEach(interval => clearInterval(interval));
+                
+                localStorage.removeItem('kierownikProData');
+                projects = [];
+                activeTasks = [];
+                taskHistory = [];
+                timerIntervals = {};
+                undoStack = [];
+                
+                loadDefaultProjects();
+                renderProjects();
+                updateDataInfo();
+                
+                showNotification('🗑️ Wszystkie dane usunięte', 'info');
+            }
+        }
+
+        // Funkcje pomocnicze
+        function formatTime(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            if (hours > 0) {
+                return `${hours}h ${minutes}m`;
             } else {
-                return 'inne';
+                return `${minutes}m ${seconds}s`;
             }
         }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Auto-save co 30 minut
+        setInterval(() => {
+            if (activeTasks.length > 0 || projects.length > 0) {
+                saveDataSilent();
+            }
+        }, 1800000); // 30 minut = 1800000ms
     </script>
 </body>
 </html>
