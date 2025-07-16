@@ -88,6 +88,31 @@
             transform: scale(1.05);
         }
         
+        /* Add project button */
+        .add-project-btn {
+            background: rgba(255,255,255,0.9);
+            color: #56ab2f;
+            padding: 15px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid #56ab2f;
+            font-weight: 700;
+            font-size: 24px;
+            box-shadow: 0 6px 20px rgba(86, 171, 47, 0.3);
+            margin: 0 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 60px;
+        }
+        
+        .add-project-btn:hover {
+            background: rgba(255,255,255,1);
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 10px 30px rgba(86, 171, 47, 0.4);
+        }
+        
         /* Back button */
         .back-btn {
             background: rgba(255,255,255,0.9);
@@ -530,12 +555,17 @@
             .main-nav {
                 flex-direction: column;
                 align-items: center;
+                gap: 10px;
             }
             
-            .main-nav label {
-                margin: 5px 0;
+            .main-nav label, .add-project-btn {
+                margin: 0;
                 min-width: 200px;
                 text-align: center;
+            }
+            
+            .add-project-btn {
+                min-width: 60px;
             }
             
             .timer-time {
@@ -559,6 +589,10 @@
             .nav-grid {
                 grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
             }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -574,7 +608,8 @@
         <input type="radio" name="main-nav" id="nav-dashboard" class="nav-input" checked>
         
         <div class="main-nav">
-            <label for="nav-dashboard">🏠 DASHBOARD</label>
+            <label for="nav-dashboard" onclick="goToDashboard()">🏠 DASHBOARD</label>
+            <button class="add-project-btn" onclick="toggleImportSection()" title="Dodaj nowy projekt">➕</button>
         </div>
         
         <!-- PROJECT NAVIGATION (dynamically generated) -->
@@ -591,21 +626,15 @@
                     <!-- Projects will be inserted here -->
                 </div>
                 
-                <!-- Import projektu z edytora -->
-                <div class="import-section">
-                    <h4>📥 Import projektu z edytora</h4>
+                <!-- Import projektu - MINIMALNA WERSJA -->
+                <div class="import-section" id="import-section" style="display: none;">
+                    <h4>📥 Import nowego projektu</h4>
                     <div class="import-instructions">
-                        <p><strong>Jak zaimportować projekt:</strong></p>
-                        <ol style="margin-left: 20px; margin-top: 10px;">
-                            <li><strong>Z edytora:</strong> Otwórz <a href="https://artur9871.github.io/kierownik-pro2/editor.html" target="_blank" style="color: #0369a1;">Edytor projektów</a>, wyeksportuj i skopiuj JSON</li>
-                            <li><strong>Z CSV:</strong> Skopiuj dane CSV z projektu (z kolumnami: Projekt, Zadanie, Typ, itp.)</li>
-                            <li>Wklej dane w polu poniżej i naciśnij odpowiedni przycisk</li>
-                        </ol>
+                        <p><strong>Zaimportuj projekt z edytora (JSON) lub dane z CSV:</strong></p>
                     </div>
                     
                     <!-- Format selector -->
                     <div style="margin: 15px 0;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Format danych:</label>
                         <div style="display: flex; gap: 10px;">
                             <label style="display: flex; align-items: center; cursor: pointer;">
                                 <input type="radio" name="importFormat" value="json" checked style="margin-right: 5px;">
@@ -620,12 +649,11 @@
                     
                     <div style="display: flex; gap: 10px; align-items: end;">
                         <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Dane projektu:</label>
-                            <textarea id="importProjectData" placeholder="Wklej tutaj dane JSON lub CSV..." style="height: 120px; font-family: monospace; font-size: 12px;"></textarea>
+                            <textarea id="importProjectData" placeholder="Wklej tutaj dane JSON lub CSV..." style="width: 100%; height: 80px; font-family: monospace; font-size: 12px; padding: 10px; border: 2px solid #e2e8f0; border-radius: 6px;"></textarea>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 5px;">
-                            <button onclick="importProject()" class="btn btn-success">📥 Importuj JSON</button>
-                            <button onclick="importCSVProject()" class="btn btn-warning">📊 Importuj CSV</button>
+                            <button onclick="importProject()" class="btn btn-success">📥 JSON</button>
+                            <button onclick="importCSVProject()" class="btn btn-warning">📊 CSV</button>
                         </div>
                     </div>
                     
@@ -635,29 +663,26 @@
                             <strong>Format CSV:</strong> Projekt,Klient,Powierzchnia,Zadanie,Typ,Wydajność,Jednostka,Szacowany_czas
                         </p>
                     </div>
+                    
+                    <div style="text-align: center; margin-top: 15px;">
+                        <button onclick="toggleImportSection()" class="btn btn-secondary">❌ Zamknij</button>
+                    </div>
                 </div>
                 
-                <!-- Szybkie akcje -->
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;">
-                    <button class="btn" onclick="manualBackup()">💾 Backup danych</button>
-                    <button class="btn btn-secondary" onclick="restoreFromFile()">📥 Przywróć dane</button>
-                    <button class="btn" onclick="exportAllData()">📊 Eksportuj raporty</button>
-                    <button class="btn btn-warning" onclick="clearAllData()">🗑️ Wyczyść wszystko</button>
-                    <a href="https://artur9871.github.io/kierownik-pro2/editor.html" target="_blank" class="btn btn-success">🔧 Otwórz edytor</a>
-                </div>
-                
-                <!-- Storage info -->
-                <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 20px; border: 1px solid #e2e8f0;">
-                    <h4 style="color: #2d3748; margin-bottom: 10px;">📊 Informacje o danych</h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; font-size: 14px;">
-                        <div>
-                            <strong>Projektów:</strong> <span id="projectCount">0</span><br>
-                            <strong>Historia zadań:</strong> <span id="taskHistoryCount">0</span>
-                        </div>
-                        <div>
-                            <strong>Ostatni zapis:</strong> <span id="lastSaveTime">Brak</span><br>
-                            <strong>Rozmiar danych:</strong> <span id="dataSize">0 KB</span>
-                        </div>
+                <!-- Kompaktowe akcje -->
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 20px 0; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn" onclick="manualBackup()" style="padding: 8px 16px;">💾 Backup</button>
+                        <button class="btn btn-secondary" onclick="restoreFromFile()" style="padding: 8px 16px;">📥 Przywróć</button>
+                        <button class="btn" onclick="exportAllData()" style="padding: 8px 16px;">📊 Eksport</button>
+                        <button class="btn btn-warning" onclick="clearAllData()" style="padding: 8px 16px;">🗑️ Wyczyść</button>
+                        <a href="https://artur9871.github.io/kierownik-pro2/editor.html" target="_blank" class="btn btn-success" style="padding: 8px 16px; text-decoration: none;">🔧 Edytor</a>
+                    </div>
+                    
+                    <!-- Kompaktowe info o danych -->
+                    <div style="margin-left: auto; font-size: 12px; color: #718096; text-align: right;">
+                        <div><strong>📊 Projekty:</strong> <span id="projectCount">0</span> | <strong>Historia:</strong> <span id="taskHistoryCount">0</span> | <strong>Rozmiar:</strong> <span id="dataSize">0 KB</span></div>
+                        <div><strong>💾 Ostatni zapis:</strong> <span id="lastSaveTime">Brak</span></div>
                     </div>
                 </div>
             </div>
@@ -677,7 +702,10 @@
             startTime: null,
             pausedTime: 0,
             currentTask: null,
-            elapsedTime: 0
+            elapsedTime: 0,
+            projectId: null,
+            taskEstimates: null,
+            taskData: null
         };
         let timerInterval = null;
         let taskHistory = [];
@@ -699,21 +727,129 @@
                 progress: 65,
                 todayTask: 'Gruntowanie',
                 surface: '120m²',
+                surfaceNumber: 120, // numeric value for calculations
                 contact: '+48601234567',
                 mapUrl: 'https://maps.apple.com/?q=ul.+Kwiatowa+15+Poznań',
                 gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
                 categories: {
                     'przygotowania': {
                         name: 'Przygotowania do prac',
-                        tasks: ['Zabezpieczanie powierzchni', 'Przygotowanie sprzętu']
+                        tasks: [
+                            {
+                                name: 'Zabezpieczanie powierzchni',
+                                estimatedTime: 2, // hours
+                                efficiency: 60, // m²/h
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Przygotowanie sprzętu',
+                                estimatedTime: 1.5,
+                                efficiency: null,
+                                unit: 'h',
+                                type: 'fixed',
+                                suggestedPeople: 1
+                            }
+                        ]
                     },
                     'przygotowanie-podloza': {
                         name: 'Przygotowanie Podłoża',
-                        tasks: ['Szlifowanie powierzchni', 'Odkurzanie', 'Nacinanie i łatanie spękań', 'Oklejanie zabezpieczające']
+                        tasks: [
+                            {
+                                name: 'Szlifowanie powierzchni',
+                                estimatedTime: 2.4, // 120m² / 50m²/h
+                                efficiency: 50,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Odkurzanie',
+                                estimatedTime: 0.5, // 120m² / 240m²/h
+                                efficiency: 240,
+                                unit: 'm²/h', 
+                                type: 'area',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Nacinanie i łatanie spękań',
+                                estimatedTime: 1.5,
+                                efficiency: 80,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Oklejanie zabezpieczające',
+                                estimatedTime: 1,
+                                efficiency: null,
+                                unit: 'h',
+                                type: 'fixed',
+                                suggestedPeople: 1
+                            }
+                        ]
                     },
                     'aplikacja-zywic': {
                         name: 'Aplikacja żywic',
-                        tasks: ['Gruntowanie', 'Warstwa dodatkowa', 'Aplikacja warstwy wierzchniej', 'Aplikacja lakieru', 'Sprzątanie', 'Cokoły', 'Inne']
+                        tasks: [
+                            {
+                                name: 'Gruntowanie',
+                                estimatedTime: 2.4, // 120m² / 50m²/h per person * 2 people
+                                efficiency: 50,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 2
+                            },
+                            {
+                                name: 'Warstwa dodatkowa', 
+                                estimatedTime: 2.4,
+                                efficiency: 50,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 2
+                            },
+                            {
+                                name: 'Aplikacja warstwy wierzchniej',
+                                estimatedTime: 1.6, // 120m² / 75m²/h
+                                efficiency: 75,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 2
+                            },
+                            {
+                                name: 'Aplikacja lakieru',
+                                estimatedTime: 1.2,
+                                efficiency: 100,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Sprzątanie',
+                                estimatedTime: 1,
+                                efficiency: null,
+                                unit: 'h',
+                                type: 'fixed',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Cokoły',
+                                estimatedTime: 2,
+                                efficiency: 15,
+                                unit: 'mb/h',
+                                type: 'linear',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Inne',
+                                estimatedTime: 1,
+                                efficiency: null,
+                                unit: 'h',
+                                type: 'fixed',
+                                suggestedPeople: 1
+                            }
+                        ]
                     }
                 }
             },
@@ -727,21 +863,145 @@
                 startDate: '28.06.2025',
                 estimatedTime: '5 dni',
                 surface: '85m²',
+                surfaceNumber: 85,
                 contact: '+48602345678',
                 mapUrl: 'https://maps.apple.com/?q=ul.+Różana+8+Poznań',
                 gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
                 categories: {
                     'przygotowania': {
                         name: 'Przygotowania do prac',
-                        tasks: ['Zabezpieczanie powierzchni', 'Przygotowanie sprzętu']
+                        tasks: [
+                            {
+                                name: 'Zabezpieczanie powierzchni',
+                                estimatedTime: 1.5,
+                                efficiency: 60,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Przygotowanie sprzętu',
+                                estimatedTime: 1,
+                                efficiency: null,
+                                unit: 'h',
+                                type: 'fixed',
+                                suggestedPeople: 1
+                            }
+                        ]
                     },
                     'przygotowanie-podloza': {
                         name: 'Przygotowanie Podłoża',
-                        tasks: ['Zrywanie niewłaściwego podłoża', 'Szlifowanie powierzchni', 'Odkurzanie', 'Nacinanie i łatanie spękań', 'Łatanie/równanie punktowe', 'Oklejanie zabezpieczające']
+                        tasks: [
+                            {
+                                name: 'Zrywanie niewłaściwego podłoża',
+                                estimatedTime: 2,
+                                efficiency: 40,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Szlifowanie powierzchni',
+                                estimatedTime: 1.7, // 85m² / 50m²/h
+                                efficiency: 50,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Odkurzanie',
+                                estimatedTime: 0.35, // 85m² / 240m²/h
+                                efficiency: 240,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Nacinanie i łatanie spękań',
+                                estimatedTime: 1,
+                                efficiency: 80,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Łatanie/równanie punktowe',
+                                estimatedTime: 1.5,
+                                efficiency: 60,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Oklejanie zabezpieczające',
+                                estimatedTime: 0.75,
+                                efficiency: null,
+                                unit: 'h',
+                                type: 'fixed',
+                                suggestedPeople: 1
+                            }
+                        ]
                     },
                     'aplikacja-zywic': {
                         name: 'Aplikacja żywic',
-                        tasks: ['Gruntowanie', 'Warstwa dodatkowa', 'Aplikacja warstwy wierzchniej', 'Aplikacja lakieru', 'Sprzątanie', 'Cokoły', 'Inne']
+                        tasks: [
+                            {
+                                name: 'Gruntowanie',
+                                estimatedTime: 1.7,
+                                efficiency: 50,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 2
+                            },
+                            {
+                                name: 'Warstwa dodatkowa',
+                                estimatedTime: 1.7,
+                                efficiency: 50,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 2
+                            },
+                            {
+                                name: 'Aplikacja warstwy wierzchniej',
+                                estimatedTime: 1.1,
+                                efficiency: 75,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 2
+                            },
+                            {
+                                name: 'Aplikacja lakieru',
+                                estimatedTime: 0.85,
+                                efficiency: 100,
+                                unit: 'm²/h',
+                                type: 'area',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Sprzątanie',
+                                estimatedTime: 0.75,
+                                efficiency: null,
+                                unit: 'h',
+                                type: 'fixed',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Cokoły',
+                                estimatedTime: 1.5,
+                                efficiency: 15,
+                                unit: 'mb/h',
+                                type: 'linear',
+                                suggestedPeople: 1
+                            },
+                            {
+                                name: 'Inne',
+                                estimatedTime: 1,
+                                efficiency: null,
+                                unit: 'h',
+                                type: 'fixed',
+                                suggestedPeople: 1
+                            }
+                        ]
                     }
                 }
             }
@@ -1394,6 +1654,10 @@
         }
         
         function backToDashboard() {
+            goToDashboard();
+        }
+        
+        function goToDashboard() {
             // Hide all project navs and sections
             document.querySelectorAll('.project-nav').forEach(nav => nav.style.display = 'none');
             document.querySelectorAll('.section').forEach(section => section.style.display = 'none');
@@ -1402,7 +1666,22 @@
             document.getElementById('nav-dashboard').checked = true;
             document.getElementById('section-dashboard').style.display = 'block';
             
+            // Hide import section
+            document.getElementById('import-section').style.display = 'none';
+            
             currentProject = null;
+        }
+        
+        function toggleImportSection() {
+            const importSection = document.getElementById('import-section');
+            if (importSection.style.display === 'none') {
+                importSection.style.display = 'block';
+                showSaveNotification('📥 Panel importu otwarty', 'info');
+            } else {
+                importSection.style.display = 'none';
+                // Clear import data when closing
+                document.getElementById('importProjectData').value = '';
+            }
         }
         
         function updateProjectTasks(projectId) {
@@ -1414,10 +1693,22 @@
             
             if (category && project.categories && project.categories[category]) {
                 taskSelect.disabled = false;
-                project.categories[category].tasks.forEach(task => {
+                const tasks = project.categories[category].tasks;
+                
+                tasks.forEach(task => {
                     const option = document.createElement('option');
-                    option.value = task;
-                    option.textContent = task;
+                    option.value = typeof task === 'string' ? task : task.name;
+                    
+                    // Create enhanced display with estimates
+                    let displayText = typeof task === 'string' ? task : task.name;
+                    
+                    if (typeof task === 'object' && task.estimatedTime) {
+                        const estimates = calculateTaskEstimate(task, project);
+                        displayText = `${task.name} | 📊 ${estimates.displayText}`;
+                    }
+                    
+                    option.textContent = displayText;
+                    option.dataset.taskData = JSON.stringify(task);
                     taskSelect.appendChild(option);
                 });
             } else {
@@ -1426,20 +1717,96 @@
             }
         }
         
+        function calculateTaskEstimate(task, project) {
+            if (typeof task === 'string') {
+                return { displayText: '', estimatedMinutes: 60, efficiency: null };
+            }
+            
+            let estimatedMinutes = task.estimatedTime * 60; // convert hours to minutes
+            let displayText = '';
+            
+            // For area-based tasks, calculate based on project surface
+            if (task.type === 'area' && task.efficiency && project.surfaceNumber) {
+                const calculatedHours = project.surfaceNumber / task.efficiency;
+                if (task.suggestedPeople > 1) {
+                    const adjustedHours = calculatedHours / task.suggestedPeople;
+                    estimatedMinutes = adjustedHours * 60;
+                    displayText = `${formatDurationHours(adjustedHours)} | ${task.efficiency}${task.unit} | 👥 ${task.suggestedPeople} os.`;
+                } else {
+                    estimatedMinutes = calculatedHours * 60;
+                    displayText = `${formatDurationHours(calculatedHours)} | ${task.efficiency}${task.unit}`;
+                }
+            } else if (task.type === 'fixed') {
+                displayText = `${formatDurationHours(task.estimatedTime)} | Czas stały`;
+                if (task.suggestedPeople) {
+                    displayText += ` | 👥 ${task.suggestedPeople} os.`;
+                }
+            } else {
+                displayText = `${formatDurationHours(task.estimatedTime)}`;
+            }
+            
+            return {
+                displayText,
+                estimatedMinutes: Math.round(estimatedMinutes),
+                efficiency: task.efficiency,
+                suggestedPeople: task.suggestedPeople || 1,
+                type: task.type || 'fixed'
+            };
+        }
+        
+        function formatDurationHours(hours) {
+            if (hours < 1) {
+                return `${Math.round(hours * 60)}m`;
+            } else if (hours < 10) {
+                const h = Math.floor(hours);
+                const m = Math.round((hours - h) * 60);
+                return m > 0 ? `${h}h ${m}m` : `${h}h`;
+            } else {
+                return `${Math.round(hours * 10) / 10}h`;
+            }
+        }
+        
         function selectProjectTask(projectId) {
-            const task = document.getElementById(`taskSelect-${projectId}`).value;
+            const taskSelect = document.getElementById(`taskSelect-${projectId}`);
+            const selectedOption = taskSelect.options[taskSelect.selectedIndex];
+            const task = selectedOption.value;
             const startBtn = document.getElementById(`startBtn-${projectId}`);
             
             if (task) {
+                // Get task data from option
+                let taskData = null;
+                try {
+                    taskData = JSON.parse(selectedOption.dataset.taskData || '{}');
+                } catch (e) {
+                    taskData = { name: task, estimatedTime: 1, type: 'fixed' };
+                }
+                
+                const project = projects.find(p => p.id === projectId);
+                const estimates = calculateTaskEstimate(taskData, project);
+                
                 currentTimer.currentTask = task;
                 currentTimer.projectId = projectId;
-                document.getElementById(`currentTask-${projectId}`).textContent = task;
+                currentTimer.taskEstimates = estimates;
+                currentTimer.taskData = taskData;
+                
+                // Update task display with estimates
+                const taskElement = document.getElementById(`currentTask-${projectId}`);
+                taskElement.innerHTML = `
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${task}</div>
+                    <div style="font-size: 14px; opacity: 0.9;">
+                        📊 Plan: ${estimates.displayText}
+                    </div>
+                `;
+                
                 startBtn.disabled = false;
                 document.getElementById(`timerStatus-${projectId}`).textContent = 'Gotowy do rozpoczęcia';
             } else {
                 currentTimer.currentTask = null;
                 currentTimer.projectId = null;
-                document.getElementById(`currentTask-${projectId}`).textContent = 'Wybierz zadanie aby rozpocząć';
+                currentTimer.taskEstimates = null;
+                currentTimer.taskData = null;
+                
+                document.getElementById(`currentTask-${projectId}`).innerHTML = 'Wybierz zadanie aby rozpocząć';
                 startBtn.disabled = true;
                 document.getElementById(`timerStatus-${projectId}`).textContent = 'Wybierz zadanie';
             }
@@ -1500,7 +1867,26 @@
                 return;
             }
             
-            // Add to history
+            // Calculate performance metrics
+            let performanceData = {};
+            if (currentTimer.taskEstimates) {
+                const estimatedMs = currentTimer.taskEstimates.estimatedMinutes * 60 * 1000;
+                const actualMinutes = finalTime / (1000 * 60);
+                const estimatedMinutes = currentTimer.taskEstimates.estimatedMinutes;
+                const variance = ((actualMinutes - estimatedMinutes) / estimatedMinutes) * 100;
+                
+                performanceData = {
+                    estimatedTime: estimatedMs,
+                    estimatedMinutes: estimatedMinutes,
+                    actualMinutes: actualMinutes,
+                    variance: Math.round(variance),
+                    efficiency: currentTimer.taskEstimates.efficiency,
+                    suggestedPeople: currentTimer.taskEstimates.suggestedPeople,
+                    type: currentTimer.taskEstimates.type
+                };
+            }
+            
+            // Add to history with performance data
             const taskRecord = {
                 task: currentTimer.currentTask,
                 projectId: projectId,
@@ -1508,7 +1894,8 @@
                 category: document.getElementById(`taskCategory-${projectId}`).value,
                 startTime: new Date(currentTimer.startTime),
                 duration: finalTime,
-                date: new Date().toDateString()
+                date: new Date().toDateString(),
+                performance: performanceData
             };
             
             taskHistory.push(taskRecord);
@@ -1523,6 +1910,22 @@
             updateProjectStats(projectId);
             updateProjectHistoryDisplay(projectId);
             updateDashboard();
+            
+            // Show performance feedback
+            if (performanceData.variance !== undefined) {
+                let feedbackMessage = '';
+                if (Math.abs(performanceData.variance) <= 10) {
+                    feedbackMessage = '🎯 Idealny czas! Zgodnie z planem';
+                } else if (performanceData.variance < -10) {
+                    feedbackMessage = `🚀 Szybciej o ${Math.abs(performanceData.variance)}%!`;
+                } else if (performanceData.variance > 10) {
+                    feedbackMessage = `⏰ Dłużej o ${performanceData.variance}%`;
+                }
+                
+                if (feedbackMessage) {
+                    showSaveNotification(feedbackMessage, 'info');
+                }
+            }
         }
         
         function resetTimer(projectId) {
@@ -1532,11 +1935,24 @@
             currentTimer.pausedTime = 0;
             currentTimer.elapsedTime = 0;
             currentTimer.projectId = null;
+            currentTimer.taskEstimates = null;
+            currentTimer.taskData = null;
             
             clearInterval(timerInterval);
             
             document.getElementById(`timerDisplay-${projectId}`).textContent = '00:00:00';
             document.getElementById(`timerStatus-${projectId}`).textContent = 'Zakończone';
+            
+            // Reset task display
+            const taskElement = document.getElementById(`currentTask-${projectId}`);
+            if (taskElement && currentTimer.currentTask) {
+                taskElement.innerHTML = `
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${currentTimer.currentTask}</div>
+                    <div style="font-size: 14px; opacity: 0.7;">
+                        ✅ Zadanie ukończone
+                    </div>
+                `;
+            }
             
             // Reset button states
             document.getElementById(`startBtn-${projectId}`).disabled = false;
@@ -1546,6 +1962,11 @@
             setTimeout(() => {
                 if (currentTimer.currentTask) {
                     document.getElementById(`timerStatus-${projectId}`).textContent = 'Gotowy do rozpoczęcia';
+                    // Restore task display with estimates
+                    const taskSelect = document.getElementById(`taskSelect-${projectId}`);
+                    if (taskSelect.value) {
+                        selectProjectTask(projectId);
+                    }
                 }
             }, 2000);
         }
@@ -1554,7 +1975,52 @@
             if (!currentTimer.isRunning || !currentTimer.startTime || currentTimer.projectId !== projectId) return;
             
             const elapsed = Date.now() - currentTimer.startTime;
+            const elapsedMinutes = elapsed / (1000 * 60);
+            
+            // Update time display
             document.getElementById(`timerDisplay-${projectId}`).textContent = formatTime(elapsed);
+            
+            // Update status with progress information
+            if (currentTimer.taskEstimates) {
+                const estimates = currentTimer.taskEstimates;
+                const estimatedMs = estimates.estimatedMinutes * 60 * 1000;
+                const remainingMs = Math.max(0, estimatedMs - elapsed);
+                const progressPercent = Math.min(100, (elapsed / estimatedMs) * 100);
+                
+                let statusText = 'W trakcie realizacji';
+                let progressIcon = '⏱️';
+                
+                // Determine progress status
+                if (progressPercent > 110) {
+                    statusText = 'Przekroczenie czasu';
+                    progressIcon = '⚠️';
+                } else if (progressPercent > 90) {
+                    statusText = 'Końcówka zadania';
+                    progressIcon = '🏁';
+                } else if (elapsedMinutes < estimates.estimatedMinutes * 0.5) {
+                    statusText = 'W dobrym tempie';
+                    progressIcon = '✅';
+                } else {
+                    statusText = 'W trakcie realizacji';
+                    progressIcon = '⏱️';
+                }
+                
+                // Update current task display with live progress
+                const taskElement = document.getElementById(`currentTask-${projectId}`);
+                if (taskElement) {
+                    taskElement.innerHTML = `
+                        <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${currentTimer.currentTask}</div>
+                        <div style="font-size: 14px; opacity: 0.9; margin-bottom: 6px;">
+                            📊 Plan: ${estimates.displayText}
+                        </div>
+                        <div style="font-size: 13px; opacity: 0.8;">
+                            ${progressIcon} Pozostało: ${formatTime(remainingMs)} | Postęp: ${Math.round(progressPercent)}%
+                        </div>
+                    `;
+                }
+                
+                document.getElementById(`timerStatus-${projectId}`).textContent = statusText;
+            }
         }
         
         function updateCurrentDate(projectId) {
@@ -1616,18 +2082,38 @@
                 return;
             }
             
-            historyList.innerHTML = projectTasks.map(task => `
-                <div class="history-item">
-                    <div class="task-info">
-                        <div class="task-name">${task.task}</div>
-                        <div class="task-details">
-                            ${task.startTime.toLocaleTimeString('pl-PL', {hour: '2-digit', minute: '2-digit'})} - 
-                            ${task.category || 'Brak kategorii'}
+            historyList.innerHTML = projectTasks.map(task => {
+                let performanceInfo = '';
+                let performanceColor = '#718096';
+                
+                if (task.performance && task.performance.variance !== undefined) {
+                    const variance = task.performance.variance;
+                    if (Math.abs(variance) <= 10) {
+                        performanceInfo = ` | 🎯 Zgodnie z planem`;
+                        performanceColor = '#16a34a';
+                    } else if (variance < -10) {
+                        performanceInfo = ` | 🚀 Szybciej o ${Math.abs(variance)}%`;
+                        performanceColor = '#16a34a';
+                    } else if (variance > 10) {
+                        performanceInfo = ` | ⏰ +${variance}%`;
+                        performanceColor = '#d97706';
+                    }
+                }
+                
+                return `
+                    <div class="history-item">
+                        <div class="task-info">
+                            <div class="task-name">${task.task}</div>
+                            <div class="task-details">
+                                ${task.startTime.toLocaleTimeString('pl-PL', {hour: '2-digit', minute: '2-digit'})} - 
+                                ${task.category || 'Brak kategorii'}
+                                <span style="color: ${performanceColor}; font-weight: 600;">${performanceInfo}</span>
+                            </div>
                         </div>
+                        <div class="task-duration">${formatDuration(task.duration)}</div>
                     </div>
-                    <div class="task-duration">${formatDuration(task.duration)}</div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
         
         function updateDashboard() {
@@ -1679,11 +2165,15 @@
             const projectTasks = taskHistory.filter(task => task.date === today && task.projectId === projectId);
             const project = projects.find(p => p.id === projectId);
             
-            let csv = 'Zadanie,Kategoria,Czas rozpoczęcia,Czas trwania (min),Data,Projekt\n';
+            let csv = 'Zadanie,Kategoria,Czas rozpoczęcia,Czas trwania (min),Plan (min),Odchylenie (%),Wydajność,Data,Projekt\n';
             
             projectTasks.forEach(task => {
                 const duration = Math.round(task.duration / (1000 * 60));
-                csv += `"${task.task}","${task.category}","${task.startTime.toLocaleTimeString('pl-PL')}",${duration},"${task.date}","${task.projectName}"\n`;
+                const estimatedMin = task.performance?.estimatedMinutes || '-';
+                const variance = task.performance?.variance !== undefined ? task.performance.variance + '%' : '-';
+                const efficiency = task.performance?.efficiency || '-';
+                
+                csv += `"${task.task}","${task.category}","${task.startTime.toLocaleTimeString('pl-PL')}",${duration},${estimatedMin},${variance},"${efficiency}","${task.date}","${task.projectName}"\n`;
             });
             
             downloadCSV(csv, `${project?.name || 'project'}-data-${new Date().toISOString().split('T')[0]}.csv`);
@@ -1693,12 +2183,17 @@
             const projectTasks = taskHistory.filter(task => task.projectId === projectId);
             const project = projects.find(p => p.id === projectId);
             
-            let csv = 'Zadanie,Kategoria,Czas rozpoczęcia,Czas zakończenia,Czas trwania (min),Data,Projekt\n';
+            let csv = 'Zadanie,Kategoria,Czas rozpoczęcia,Czas zakończenia,Czas trwania (min),Plan (min),Odchylenie (%),Wydajność,Sugerowane osoby,Data,Projekt\n';
             
             projectTasks.forEach(task => {
                 const duration = Math.round(task.duration / (1000 * 60));
                 const endTime = new Date(task.startTime.getTime() + task.duration);
-                csv += `"${task.task}","${task.category}","${task.startTime.toLocaleTimeString('pl-PL')}","${endTime.toLocaleTimeString('pl-PL')}",${duration},"${task.date}","${task.projectName}"\n`;
+                const estimatedMin = task.performance?.estimatedMinutes || '-';
+                const variance = task.performance?.variance !== undefined ? task.performance.variance + '%' : '-';
+                const efficiency = task.performance?.efficiency || '-';
+                const suggestedPeople = task.performance?.suggestedPeople || '-';
+                
+                csv += `"${task.task}","${task.category}","${task.startTime.toLocaleTimeString('pl-PL')}","${endTime.toLocaleTimeString('pl-PL')}",${duration},${estimatedMin},${variance},"${efficiency}",${suggestedPeople},"${task.date}","${task.projectName}"\n`;
             });
             
             downloadCSV(csv, `${project?.name || 'project'}-detailed-${new Date().toISOString().split('T')[0]}.csv`);
@@ -1863,7 +2358,6 @@
             document.body.removeChild(link);
         }
         
-        // Import functions
         function importProject() {
             const projectData = document.getElementById('importProjectData').value.trim();
             
@@ -1882,6 +2376,9 @@
                 
                 addImportedProject(project, 'json');
                 document.getElementById('importProjectData').value = '';
+                
+                // Close import section after successful import
+                document.getElementById('import-section').style.display = 'none';
                 
             } catch (error) {
                 alert('Błąd podczas importowania projektu. Sprawdź czy kod JSON jest prawidłowy.');
@@ -1961,6 +2458,9 @@
                 addImportedProject(project, 'csv');
                 document.getElementById('importProjectData').value = '';
                 
+                // Close import section after successful import
+                document.getElementById('import-section').style.display = 'none';
+                
             } catch (error) {
                 alert(`❌ Błąd podczas importowania CSV:\n\n${error.message}\n\nSprawdź format danych i spróbuj ponownie.`);
                 console.error('CSV Import error:', error);
@@ -1968,6 +2468,13 @@
         }
         
         function addImportedProject(projectData, importType) {
+            // Extract surface number for calculations
+            let surfaceNumber = 0;
+            if (projectData.surface) {
+                const surfaceStr = projectData.surface.toString();
+                surfaceNumber = parseFloat(surfaceStr.replace(/[^\d.]/g, '')) || 0;
+            }
+            
             // Create new project object
             const newProject = {
                 id: 'imported-' + Date.now(),
@@ -1977,6 +2484,7 @@
                 status: 'imported',
                 statusText: '🟢 ZAIMPORTOWANY',
                 surface: projectData.surface || '0m²',
+                surfaceNumber: surfaceNumber,
                 client: projectData.client || 'Zaimportowany klient',
                 taskCount: projectData.tasks ? projectData.tasks.length : 0,
                 contact: '+48123456789',
@@ -1987,7 +2495,7 @@
                 categories: {}
             };
             
-            // Convert tasks to categories
+            // Convert tasks to categories with estimates
             if (projectData.tasks) {
                 const categoriesMap = {};
                 
@@ -1999,7 +2507,33 @@
                             tasks: []
                         };
                     }
-                    categoriesMap[category].tasks.push(task.name);
+                    
+                    // Create enhanced task object with estimates
+                    const enhancedTask = {
+                        name: task.name,
+                        estimatedTime: task.estimatedTime || 1,
+                        efficiency: task.efficiency ? parseFloat(task.efficiency) : null,
+                        unit: task.unit || 'h',
+                        type: task.type || 'fixed',
+                        suggestedPeople: 1 // default for imported tasks
+                    };
+                    
+                    // Try to guess suggested people from efficiency description
+                    if (task.efficiency && typeof task.efficiency === 'string') {
+                        if (task.efficiency.includes('2 osoby') || task.efficiency.includes('2 osób')) {
+                            enhancedTask.suggestedPeople = 2;
+                        } else if (task.efficiency.includes('3 osoby') || task.efficiency.includes('3 osób')) {
+                            enhancedTask.suggestedPeople = 3;
+                        }
+                        
+                        // Extract numeric efficiency
+                        const efficiencyMatch = task.efficiency.match(/(\d+)/);
+                        if (efficiencyMatch) {
+                            enhancedTask.efficiency = parseFloat(efficiencyMatch[1]);
+                        }
+                    }
+                    
+                    categoriesMap[category].tasks.push(enhancedTask);
                 });
                 
                 newProject.categories = categoriesMap;
@@ -2018,7 +2552,8 @@
             successMessage += `📊 Zadań: ${newProject.taskCount}\n`;
             if (projectData.client) successMessage += `👥 Klient: ${projectData.client}\n`;
             if (projectData.surface) successMessage += `📐 Powierzchnia: ${projectData.surface}\n`;
-            successMessage += `\nNowy projekt pojawił się na dashboardzie jako oddzielny kafelek.`;
+            successMessage += `\nNowy projekt pojawił się na dashboardzie jako oddzielny kafelik.`;
+            successMessage += `\n\n🎯 Zadania zawierają szacowane czasy i wydajności dla lepszego planowania pracy.`;
             
             alert(successMessage);
         }
