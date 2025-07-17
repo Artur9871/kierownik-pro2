@@ -1604,7 +1604,7 @@
 
  
 
-        .task-name {
+        .task-item .task-name {
 
             font-weight: 600;
 
@@ -2260,7 +2260,13 @@
 
         <div class="header">
 
-            <div class="logo" onclick="showDashboard()">🏗️ KIEROWNIK PRO</div>
+            <div class="logo" onclick="showDashboard()">
+
+                <div>🏗️ KIEROWNIK PRO</div>
+
+                <div class="subtitle">System Zarządzania Projektami Budowlanymi</div>
+
+            </div>
 
             <div class="nav-buttons">
 
@@ -2509,6 +2515,20 @@
                         <div id="historyContainer">
 
                             <!-- Historia będzie dodawana tutaj -->
+
+                        </div>
+
+                       
+
+                        <div class="daily-report-section">
+
+                            <h4 style="margin-bottom: 15px; text-align: center;">📋 Raport dzienny</h4>
+
+                            <button class="daily-report-btn" onclick="generateDailyReport()">
+
+                                📤 Zakończ dzień pracy
+
+                            </button>
 
                         </div>
 
@@ -2804,6 +2824,16 @@
 
  
 
+                // Oblicz postęp - zadania unikalne, nie wszystkie wpisy
+
+                const uniqueCompletedTasks = [...new Set(projectHistory.map(t => t.task))].length;
+
+                const totalTasks = Object.values(project.categories || {}).reduce((sum, cat) => sum + cat.length, 0);
+
+                const progress = totalTasks > 0 ? Math.round((uniqueCompletedTasks / totalTasks) * 100) : 0;
+
+ 
+
                 projectCard.innerHTML = `
 
                     <div>
@@ -2816,19 +2846,55 @@
 
                             ${project.area ? `${project.client ? ' | ' : ''}Powierzchnia: ${project.area}m²` : ''}
 
-                            <span class="project-status">${getStatusText(project.status)}</span>
+                        </div>
+
+                        <span class="project-status">${getStatusText(project.status)}</span>
+
+                    </div>
+
+                    <div class="project-info-grid">
+
+                        <div class="project-info-item">
+
+                            <div class="project-info-label">Klient</div>
+
+                            <div class="project-info-value">${project.client || 'Brak danych'}</div>
+
+                        </div>
+
+                        <div class="project-info-item">
+
+                            <div class="project-info-label">Powierzchnia</div>
+
+                            <div class="project-info-value">${project.area || 0}m²</div>
+
+                        </div>
+
+                        <div class="project-info-item">
+
+                            <div class="project-info-label">Postęp</div>
+
+                            <div class="project-info-value">${progress}%</div>
+
+                        </div>
+
+                        <div class="project-info-item">
+
+                            <div class="project-info-label">Czas dzisiaj</div>
+
+                            <div class="project-info-value">${formatTime(getTodayTime(project.id))}</div>
 
                         </div>
 
                     </div>
 
-                    <div class="project-stats">
+                    <div class="quick-actions">
 
-                        <span>🎯 ${tasksCompleted} zadań</span>
+                        <a href="#" class="quick-action">📞 Kontakt</a>
 
-                        <span>⏱️ ${formatTime(totalTime)}</span>
+                        <a href="#" class="quick-action">🗺️ Nawigacja</a>
 
-                        <span>🔄 ${activeTasksCount} aktywnych</span>
+                        <a href="#" class="quick-action">⏰ Timer</a>
 
                     </div>
 
@@ -2839,6 +2905,38 @@
                 container.appendChild(projectCard);
 
             });
+
+        }
+
+ 
+
+        function getTodayTime(projectId) {
+
+            const today = new Date().toDateString();
+
+            const todayTasks = taskHistory.filter(t => t.projectId === projectId && t.date === today);
+
+           
+
+            // Grupuj zadania według nazwy i weź tylko najnowsze wpisy
+
+            const taskGroups = {};
+
+            todayTasks.forEach(task => {
+
+                const taskKey = task.task;
+
+                if (!taskGroups[taskKey] || new Date(task.date + ' ' + task.time) > new Date(taskGroups[taskKey].date + ' ' + taskGroups[taskKey].time)) {
+
+                    taskGroups[taskKey] = task;
+
+                }
+
+            });
+
+           
+
+            return Object.values(taskGroups).reduce((sum, task) => sum + task.duration, 0);
 
         }
 
@@ -3062,9 +3160,79 @@
 
  
 
+            // Sprawdź czy zadanie było już wykonywane dzisiaj
+
+            const today = new Date().toDateString();
+
+            const todayHistory = taskHistory.filter(task =>
+
+                task.projectId === currentProject.id &&
+
+                task.task === taskName &&
+
+                task.date === today &&
+
+                task.task !== '🏁 DZIEŃ PRACY ZAKOŃCZONY'
+
+            );
+
+ 
+
+            // Sprawdź czy dzień został już zakończony
+
+            const dayFinished = taskHistory.some(task =>
+
+                task.projectId === currentProject.id &&
+
+                task.task === '🏁 DZIEŃ PRACY ZAKOŃCZONY' &&
+
+                task.date === today
+
+            );
+
+ 
+
+            let taskAction = 'start';
+
+            let previousDayTime = 0;
+
+           
+
+            if (todayHistory.length > 0 && !dayFinished) {
+
+                // Oblicz łączny czas z dzisiaj dla tego zadania
+
+                previousDayTime = todayHistory.reduce((sum, t) => sum + t.duration, 0);
+
+               
+
+                const choice = confirm(
+
+                    `❓ Zadanie "${taskName}" było już wykonywane dzisiaj.\n\n` +
+
+                    `🕐 Łączny czas dzisiaj: ${formatTime(previousDayTime)}\n` +
+
+                    `📊 Ilość sesji: ${todayHistory.length}\n\n` +
+
+                    `Wybierz opcję:\n` +
+
+                    `✅ OK - KONTYNUACJA (czas zostanie dodany do dzisiejszego)\n` +
+
+                    `❌ Anuluj - NOWY START (osobna sesja w historii)`
+
+                );
+
+               
+
+                taskAction = choice ? 'continue' : 'restart';
+
+            }
+
+ 
+
             // Utwórz punkt undo przed dodaniem zadania
 
-            createUndoPoint(`Rozpoczęcie zadania: ${taskName}`);
+            createUndoPoint(`Rozpoczęcie zadania: ${taskName} (${taskAction})`);
 
  
 
@@ -3130,7 +3298,13 @@
 
                 status: 'active',
 
-                elapsedTime: 0
+                elapsedTime: 0,
+
+                taskAction: taskAction,
+
+                previousDayTime: previousDayTime, // Czas z wcześniejszych sesji dzisiaj
+
+                sessionCount: todayHistory.length + 1 // Numer sesji dzisiaj
 
             };
 
@@ -3164,7 +3338,19 @@
 
            
 
-            showNotification(`✅ Rozpoczęto zadanie: ${taskName}`, 'success');
+            const actionText = taskAction === 'continue' ?
+
+                `Kontynuacja (${formatTime(previousDayTime)} + nowy czas)` :
+
+                taskAction === 'restart' ?
+
+                `Nowy start (sesja ${newTask.sessionCount})` :
+
+                'Rozpoczęcie';
+
+           
+
+            showNotification(`✅ ${actionText}: ${taskName}`, 'success');
 
         }
 
@@ -3262,9 +3448,9 @@
 
            
 
-            // Oblicz finalny czas
+            // Oblicz finalny czas bieżącej sesji
 
-            const finalTime = task.status === 'active' ?
+            const sessionTime = task.status === 'active' ?
 
                 Date.now() - task.startTime :
 
@@ -3272,11 +3458,17 @@
 
            
 
-            // Oblicz wydajność
+            // Oblicz łączny czas (bieżąca sesja + poprzednie sesje z dzisiaj)
+
+            const totalDayTime = sessionTime + (task.previousDayTime || 0);
+
+           
+
+            // Oblicz wydajność na podstawie łącznego czasu dziennego
 
             const efficiency = task.estimatedTime > 0 ?
 
-                (task.estimatedTime / finalTime) * 100 : 100;
+                (task.estimatedTime / totalDayTime) * 100 : 100;
 
            
 
@@ -3294,19 +3486,39 @@
 
  
 
+            // Przygotuj nazwę zadania z informacją o sesji
+
+            let taskNameWithSession = task.task;
+
+            if (task.taskAction === 'continue') {
+
+                taskNameWithSession = `${task.task} (kontynuacja - sesja ${task.sessionCount})`;
+
+            } else if (task.taskAction === 'restart') {
+
+                taskNameWithSession = `${task.task} (restart - sesja ${task.sessionCount})`;
+
+            }
+
+ 
+
             // Dodaj do historii
 
-            taskHistory.push({
+            const historyEntry = {
 
                 id: Date.now().toString(),
 
                 projectId: task.projectId,
 
-                task: task.task,
+                task: task.task, // Oryginalna nazwa zadania
+
+                taskWithSession: taskNameWithSession, // Nazwa z informacją o sesji
 
                 category: task.category,
 
-                duration: finalTime,
+                duration: totalDayTime, // Łączny czas z dzisiaj
+
+                sessionDuration: sessionTime, // Czas tylko tej sesji
 
                 estimatedTime: task.estimatedTime,
 
@@ -3316,11 +3528,21 @@
 
                 performanceText: performanceText,
 
-                date: new Date().toLocaleDateString('pl-PL'),
+                taskAction: task.taskAction,
+
+                sessionCount: task.sessionCount,
+
+                previousDayTime: task.previousDayTime || 0,
+
+                date: new Date().toDateString(),
 
                 time: new Date().toLocaleTimeString('pl-PL')
 
-            });
+            };
+
+ 
+
+            taskHistory.push(historyEntry);
 
  
 
@@ -3340,7 +3562,21 @@
 
            
 
-            showNotification(`✅ Zakończono: ${task.task} | ${performanceText}`, 'success');
+            // Pokaż powiadomienie z informacją o sesji
+
+            const sessionInfo = task.taskAction === 'continue' ?
+
+                ` | Sesja: ${formatTime(sessionTime)} | Łącznie dzisiaj: ${formatTime(totalDayTime)}` :
+
+                task.taskAction === 'restart' ?
+
+                ` | Sesja ${task.sessionCount}: ${formatTime(sessionTime)}` :
+
+                '';
+
+           
+
+            showNotification(`✅ Zakończono: ${task.task}${sessionInfo} | ${performanceText}`, 'success');
 
         }
 
@@ -3478,6 +3714,10 @@
 
                         <span style="margin-left: auto;">${task.status === 'active' ? '🟢 Aktywne' : '⏸️ Wstrzymane'}</span>
 
+                        ${task.taskAction === 'continue' ? '<span style="margin-left: 10px;">🔄 Kontynuacja</span>' : ''}
+
+                        ${task.taskAction === 'restart' ? '<span style="margin-left: 10px;">🔄 Restart</span>' : ''}
+
                     </div>
 
                 `;
@@ -3590,13 +3830,9 @@
 
            
 
-            // Czas dzisiaj
+            // Czas dzisiaj - używaj getTodayTime
 
-            const today = new Date().toLocaleDateString('pl-PL');
-
-            const todayTasks = projectHistory.filter(t => t.date === today);
-
-            const todayTime = todayTasks.reduce((sum, t) => sum + t.duration, 0);
+            const todayTime = getTodayTime(currentProject.id);
 
             document.getElementById('todayTimeCount').textContent = formatTime(todayTime);
 
@@ -3668,17 +3904,41 @@
 
                
 
+                // Pokaż informacje o sesji dla zadań kontynuowanych/restartowanych
+
+                let timeDisplay = '';
+
+                let taskDisplayName = task.taskWithSession || task.task;
+
+               
+
+                if (task.taskAction === 'continue' && task.sessionDuration) {
+
+                    timeDisplay = `${formatTime(task.sessionDuration)} (łącznie dzisiaj: ${formatTime(task.duration)})`;
+
+                } else if (task.taskAction === 'restart' && task.sessionCount > 1) {
+
+                    timeDisplay = `${formatTime(task.sessionDuration)} (sesja ${task.sessionCount})`;
+
+                } else {
+
+                    timeDisplay = formatTime(task.duration);
+
+                }
+
+               
+
                 historyItem.innerHTML = `
 
                     <div>
 
-                        <div class="history-task">${task.task}</div>
+                        <div class="history-task">${taskDisplayName}</div>
 
                         <div class="history-details">
 
                             ${task.date} ${task.time} | ${task.category} |
 
-                            👥 ${task.teamSize} osób | ⏱️ ${formatTime(task.duration)}
+                            👥 ${task.teamSize} osób | ⏱️ ${timeDisplay}
 
                         </div>
 
@@ -4574,6 +4834,914 @@
 
  
 
+        // Daily Report Functions
+
+        function generateDailyReport() {
+
+            if (!currentProject) {
+
+                showNotification('❌ Nie wybrano projektu', 'error');
+
+                return;
+
+            }
+
+ 
+
+            const project = currentProject;
+
+            const today = new Date().toDateString();
+
+            const todayTasks = taskHistory.filter(task =>
+
+                task.projectId === project.id &&
+
+                task.date === today
+
+            );
+
+ 
+
+            // Oblicz postęp projektu
+
+            const totalTasks = Object.values(project.categories || {}).reduce((sum, cat) => sum + cat.length, 0);
+
+            const completedTasksTotal = taskHistory.filter(task => task.projectId === project.id).length;
+
+            const progress = totalTasks > 0 ? Math.round((completedTasksTotal / totalTasks) * 100) : 0;
+
+ 
+
+            // Oblicz statystyki dzisiaj
+
+            const totalTimeToday = getTodayTime(project.id);
+
+            const activeTasksCount = activeTasks.filter(t => t.projectId === project.id).length;
+
+            const workersToday = todayTasks.length > 0 ? Math.max(...todayTasks.map(t => t.teamSize || 1)) : 0;
+
+ 
+
+            // Znajdź następne zadania do wykonania
+
+            const nextTasks = getNextTasks(project, completedTasksTotal);
+
+ 
+
+            // Pokaż modal z raportem
+
+            showDailyReportModal(project, todayTasks, {
+
+                totalTime: totalTimeToday,
+
+                completedTasksCount: getTodayTasksCount(project.id),
+
+                activeTasks: activeTasksCount,
+
+                workers: workersToday,
+
+                progress,
+
+                totalTasks,
+
+                nextTasks
+
+            });
+
+        }
+
+ 
+
+        function getTodayTasksCount(projectId) {
+
+            const today = new Date().toDateString();
+
+            const todayTasks = taskHistory.filter(t => t.projectId === projectId && t.date === today);
+
+           
+
+            // Grupuj zadania według nazwy i policz unikalne
+
+            const taskGroups = {};
+
+            todayTasks.forEach(task => {
+
+                const taskKey = task.task;
+
+                if (!taskGroups[taskKey] || new Date(task.date + ' ' + task.time) > new Date(taskGroups[taskKey].date + ' ' + taskGroups[taskKey].time)) {
+
+                    taskGroups[taskKey] = task;
+
+                }
+
+            });
+
+           
+
+            return Object.keys(taskGroups).length;
+
+        }
+
+ 
+
+        function getNextTasks(project, completedCount) {
+
+            const nextTasks = [];
+
+           
+
+            // Pobierz wszystkie wykonane zadania
+
+            const completedTaskNames = taskHistory
+
+                .filter(h => h.projectId === project.id)
+
+                .map(h => h.task.replace(/ \(kontynuacja.*\)/, '').replace(/ \(restart.*\)/, ''));
+
+           
+
+            Object.entries(project.categories || {}).forEach(([category, tasks]) => {
+
+                tasks.forEach(task => {
+
+                    // Sprawdź czy zadanie nie zostało jeszcze ukończone
+
+                    const isCompleted = completedTaskNames.includes(task.name);
+
+                   
+
+                    if (!isCompleted && nextTasks.length < 5) {
+
+                        nextTasks.push({
+
+                            name: task.name,
+
+                            category: category,
+
+                            estimatedTime: task.estimatedTime,
+
+                            teamSize: task.teamSize || 1
+
+                        });
+
+                    }
+
+                });
+
+            });
+
+ 
+
+            return nextTasks;
+
+        }
+
+ 
+
+        function showDailyReportModal(project, todayTasks, stats) {
+
+            const modal = document.getElementById('dailyReportModal');
+
+            const content = document.getElementById('reportContent');
+
+           
+
+            const currentDate = new Date().toLocaleDateString('pl-PL', {
+
+                weekday: 'long',
+
+                year: 'numeric',
+
+                month: 'long',
+
+                day: 'numeric'
+
+            });
+
+ 
+
+            // Grupuj zadania dzisiejsze dla raportu
+
+            const taskGroups = {};
+
+            todayTasks.forEach(task => {
+
+                const taskKey = task.task;
+
+                if (!taskGroups[taskKey] || new Date(task.date + ' ' + task.time) > new Date(taskGroups[taskKey].date + ' ' + taskGroups[taskKey].time)) {
+
+                    taskGroups[taskKey] = task;
+
+                }
+
+            });
+
+ 
+
+            const uniqueTodayTasks = Object.values(taskGroups);
+
+ 
+
+            content.innerHTML = `
+
+                <div class="report-summary">
+
+                    <h3 style="color: #2d3748; margin-bottom: 15px; text-align: center;">
+
+                        ${project.icon} ${project.name}
+
+                    </h3>
+
+                    <p style="text-align: center; color: #718096; margin-bottom: 20px;">
+
+                        ${currentDate}
+
+                    </p>
+
+                   
+
+                    <div class="summary-grid">
+
+                        <div class="summary-item">
+
+                            <div class="summary-value">${formatTime(stats.totalTime)}</div>
+
+                            <div class="summary-label">Czas pracy</div>
+
+                        </div>
+
+                        <div class="summary-item">
+
+                            <div class="summary-value">${stats.completedTasksCount}</div>
+
+                            <div class="summary-label">Ukończone zadania</div>
+
+                        </div>
+
+                        <div class="summary-item">
+
+                            <div class="summary-value">${stats.workers}</div>
+
+                            <div class="summary-label">Pracownicy</div>
+
+                        </div>
+
+                        <div class="summary-item">
+
+                            <div class="summary-value">${stats.activeTasks}</div>
+
+                            <div class="summary-label">Aktywne zadania</div>
+
+                        </div>
+
+                    </div>
+
+ 
+
+                    <div style="margin-bottom: 10px;">
+
+                        <strong>Postęp projektu: ${stats.progress}%</strong>
+
+                        <span style="color: #718096; margin-left: 10px;">
+
+                            (${taskHistory.filter(t => t.projectId === project.id).length}/${stats.totalTasks} zadań)
+
+                        </span>
+
+                    </div>
+
+                    <div class="progress-bar-container">
+
+                        <div class="progress-bar-fill" style="width: ${stats.progress}%">
+
+                            ${stats.progress}%
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+ 
+
+                ${uniqueTodayTasks.length > 0 ? `
+
+                    <div class="completed-tasks">
+
+                        <h4>✅ Ukończone zadania dzisiaj:</h4>
+
+                        ${uniqueTodayTasks.map(task => `
+
+                            <div class="task-item">
+
+                                <div class="task-details">
+
+                                    <div class="task-name">${task.task}</div>
+
+                                    <div class="task-meta">
+
+                                        ${task.category} • ${task.teamSize || 1} osób •
+
+                                        ${task.time}
+
+                                    </div>
+
+                                </div>
+
+                                <div class="task-time">${formatTime(task.duration)}</div>
+
+                            </div>
+
+                        `).join('')}
+
+                    </div>
+
+                ` : `
+
+                    <div class="completed-tasks">
+
+                        <p style="text-align: center; color: #718096; padding: 20px;">
+
+                            Brak ukończonych zadań dzisiaj
+
+                        </p>
+
+                    </div>
+
+                `}
+
+ 
+
+                ${stats.nextTasks.length > 0 ? `
+
+                    <div class="next-tasks">
+
+                        <h4>🔄 Następne zadania do wykonania:</h4>
+
+                        ${stats.nextTasks.map(task => `
+
+                            <div class="next-task-item">
+
+                                <div>
+
+                                    <strong>${task.name}</strong>
+
+                                    <span style="color: #a0aec0; margin-left: 10px;">
+
+                                        ${task.category} • ${task.teamSize} osób
+
+                                    </span>
+
+                                </div>
+
+                                <div class="next-task-time">${formatTime(task.estimatedTime * 3600000)}</div>
+
+                            </div>
+
+                        `).join('')}
+
+                    </div>
+
+                ` : ''}
+
+ 
+
+                <div class="send-options">
+
+                    <button class="send-btn download" onclick="downloadDailyReport()">
+
+                        💾 Pobierz CSV
+
+                    </button>
+
+                    <button class="send-btn email" onclick="sendReportEmail()">
+
+                        📧 Wyślij email
+
+                    </button>
+
+                    <button class="send-btn sms" onclick="sendReportSMS()">
+
+                        📱 Wyślij SMS
+
+                    </button>
+
+                    <button class="send-btn" onclick="shareReportLink()">
+
+                        🔗 Udostępnij
+
+                    </button>
+
+                </div>
+
+               
+
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+
+                    <button class="send-btn" onclick="finishWorkDay()" style="background: #48bb78; width: 100%;">
+
+                        ✅ Zakończ dzień i zresetuj liczniki
+
+                    </button>
+
+                </div>
+
+            `;
+
+ 
+
+            modal.classList.add('show');
+
+        }
+
+ 
+
+        function closeDailyReportModal() {
+
+            document.getElementById('dailyReportModal').classList.remove('show');
+
+        }
+
+ 
+
+        function finishWorkDay() {
+
+            if (!currentProject) {
+
+                showNotification('❌ Nie wybrano projektu', 'error');
+
+                return;
+
+            }
+
+ 
+
+            if (confirm('🏁 Czy na pewno chcesz zakończyć dzień pracy?\n\nTo spowoduje:\n• Reset statystyk dziennych\n• Jutro zadania będą liczone od zera\n• Dane zostają zachowane w historii')) {
+
+               
+
+                // Zatrzymaj wszystkie aktywne zadania w tym projekcie
+
+                const activeProjectTasks = activeTasks.filter(t => t.projectId === currentProject.id);
+
+                activeProjectTasks.forEach(task => {
+
+                    // Automatycznie zakończ aktywne zadania
+
+                    if (task.status === 'active') {
+
+                        pauseTask(task.id); // Najpierw zatrzymaj
+
+                    }
+
+                });
+
+ 
+
+                // Oznacz w danych że dzień został zakończony
+
+                const today = new Date().toDateString();
+
+                const totalDayTime = getTodayTime(currentProject.id);
+
+ 
+
+                // Dodaj znacznik zakończenia dnia do historii
+
+                taskHistory.push({
+
+                    id: Date.now().toString(),
+
+                    projectId: currentProject.id,
+
+                    task: '🏁 DZIEŃ PRACY ZAKOŃCZONY',
+
+                    category: 'System',
+
+                    duration: totalDayTime,
+
+                    teamSize: 0,
+
+                    date: today,
+
+                    time: new Date().toLocaleTimeString('pl-PL'),
+
+                    performanceText: '📊 Dzień pracy oficjalnie zakończony'
+
+                });
+
+ 
+
+                saveDataSilent();
+
+                closeDailyReportModal();
+
+                updateProjectStats();
+
+                renderHistory();
+
+               
+
+                showNotification('🏁 Dzień pracy zakończony! Jutro zadania będą liczone od zera.', 'success');
+
+            }
+
+        }
+
+ 
+
+        function downloadDailyReport() {
+
+            if (!currentProject) {
+
+                showNotification('❌ Nie wybrano projektu', 'error');
+
+                return;
+
+            }
+
+ 
+
+            const project = currentProject;
+
+            const today = new Date().toDateString();
+
+            const todayTasks = taskHistory.filter(task =>
+
+                task.projectId === project.id &&
+
+                task.date === today
+
+            );
+
+ 
+
+            // Grupuj zadania według nazwy i weź tylko najnowsze wpisy
+
+            const taskGroups = {};
+
+            todayTasks.forEach(task => {
+
+                const taskKey = task.task;
+
+                if (!taskGroups[taskKey] || new Date(task.date + ' ' + task.time) > new Date(taskGroups[taskKey].date + ' ' + taskGroups[taskKey].time)) {
+
+                    taskGroups[taskKey] = task;
+
+                }
+
+            });
+
+ 
+
+            const totalTime = Object.values(taskGroups).reduce((sum, task) => sum + task.duration, 0);
+
+            const completedTasks = taskHistory.filter(task => task.projectId === project.id).length;
+
+            const totalTasks = Object.values(project.categories || {}).reduce((sum, cat) => sum + cat.length, 0);
+
+            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+ 
+
+            let csv = 'RAPORT DZIENNY\n';
+
+            csv += `Projekt,${project.name}\n`;
+
+            csv += `Klient,${project.client}\n`;
+
+            csv += `Data,${new Date().toLocaleDateString('pl-PL')}\n`;
+
+            csv += `Powierzchnia,${project.area}m²\n`;
+
+            csv += `Czas pracy dzisiaj,${formatTime(totalTime)}\n`;
+
+            csv += `Ukończone zadania dzisiaj,${Object.keys(taskGroups).length}\n`;
+
+            csv += `Postęp projektu,${progress}% (${completedTasks}/${totalTasks})\n`;
+
+            csv += '\n';
+
+           
+
+            csv += 'UKOŃCZONE ZADANIA DZISIAJ\n';
+
+            csv += 'Zadanie,Kategoria,Czas rozpoczęcia,Czas trwania,Pracownicy,Wydajność\n';
+
+           
+
+            Object.values(taskGroups).forEach(task => {
+
+                const duration = Math.round(task.duration / (1000 * 60));
+
+                csv += `"${task.task}","${task.category}","${task.time}","${duration} min","${task.teamSize || 1}","${task.performanceText || 'Brak danych'}"\n`;
+
+            });
+
+ 
+
+            const filename = `raport-dzienny-${project.name.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.csv`;
+
+            downloadCSV(csv, filename);
+
+           
+
+            showNotification('📥 Raport dzienny pobrany', 'success');
+
+        }
+
+ 
+
+        function sendReportEmail() {
+
+            if (!currentProject) {
+
+                showNotification('❌ Nie wybrano projektu', 'error');
+
+                return;
+
+            }
+
+ 
+
+            const project = currentProject;
+
+            const today = new Date().toDateString();
+
+            const todayTasks = taskHistory.filter(task =>
+
+                task.projectId === project.id &&
+
+                task.date === today
+
+            );
+
+ 
+
+            // Grupuj zadania i oblicz statystyki
+
+            const taskGroups = {};
+
+            todayTasks.forEach(task => {
+
+                const taskKey = task.task;
+
+                if (!taskGroups[taskKey] || new Date(task.date + ' ' + task.time) > new Date(taskGroups[taskKey].date + ' ' + taskGroups[taskKey].time)) {
+
+                    taskGroups[taskKey] = task;
+
+                }
+
+            });
+
+ 
+
+            const totalTime = Object.values(taskGroups).reduce((sum, task) => sum + task.duration, 0);
+
+            const completedTasks = taskHistory.filter(task => task.projectId === project.id).length;
+
+            const totalTasks = Object.values(project.categories || {}).reduce((sum, cat) => sum + cat.length, 0);
+
+            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+ 
+
+            const subject = `Raport dzienny - ${project.name} - ${new Date().toLocaleDateString('pl-PL')}`;
+
+            const body = `📋 RAPORT DZIENNY
+
+ 
+
+🏗️ Projekt: ${project.name}
+
+👥 Klient: ${project.client}
+
+📅 Data: ${new Date().toLocaleDateString('pl-PL')}
+
+📐 Powierzchnia: ${project.area}m²
+
+ 
+
+📊 PODSUMOWANIE:
+
+⏱️ Czas pracy dzisiaj: ${formatTime(totalTime)}
+
+✅ Ukończone zadania dzisiaj: ${Object.keys(taskGroups).length}
+
+📈 Postęp projektu: ${progress}% (${completedTasks}/${totalTasks} zadań)
+
+ 
+
+📋 UKOŃCZONE ZADANIA:
+
+${Object.values(taskGroups).map(task =>
+
+    `• ${task.task} - ${formatTime(task.duration)} (${task.teamSize || 1} osób)`
+
+).join('\n')}
+
+ 
+
+---
+
+Raport wygenerowany automatycznie z systemu Kierownik Pro`;
+
+ 
+
+            const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+            window.open(mailtoLink);
+
+           
+
+            showNotification('📧 Otwarto aplikację email', 'info');
+
+        }
+
+ 
+
+        function sendReportSMS() {
+
+            if (!currentProject) {
+
+                showNotification('❌ Nie wybrano projektu', 'error');
+
+                return;
+
+            }
+
+ 
+
+            const project = currentProject;
+
+            const today = new Date().toDateString();
+
+            const todayTasks = taskHistory.filter(task =>
+
+                task.projectId === project.id &&
+
+                task.date === today
+
+            );
+
+ 
+
+            // Grupuj zadania i oblicz statystyki
+
+            const taskGroups = {};
+
+            todayTasks.forEach(task => {
+
+                const taskKey = task.task;
+
+                if (!taskGroups[taskKey] || new Date(task.date + ' ' + task.time) > new Date(taskGroups[taskKey].date + ' ' + taskGroups[taskKey].time)) {
+
+                    taskGroups[taskKey] = task;
+
+                }
+
+            });
+
+ 
+
+            const totalTime = Object.values(taskGroups).reduce((sum, task) => sum + task.duration, 0);
+
+            const completedTasks = taskHistory.filter(task => task.projectId === project.id).length;
+
+            const totalTasks = Object.values(project.categories || {}).reduce((sum, cat) => sum + cat.length, 0);
+
+            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+ 
+
+            const message = `📋 ${project.name} - ${new Date().toLocaleDateString('pl-PL')}
+
+⏱️ Czas: ${formatTime(totalTime)}
+
+✅ Zadania: ${Object.keys(taskGroups).length}
+
+📈 Postęp: ${progress}%`;
+
+ 
+
+            const smsLink = `sms:?body=${encodeURIComponent(message)}`;
+
+            window.open(smsLink);
+
+           
+
+            showNotification('📱 Otwarto aplikację SMS', 'info');
+
+        }
+
+ 
+
+        function shareReportLink() {
+
+            if (!currentProject) {
+
+                showNotification('❌ Nie wybrano projektu', 'error');
+
+                return;
+
+            }
+
+ 
+
+            const project = currentProject;
+
+            const today = new Date().toDateString();
+
+            const todayTasks = taskHistory.filter(task =>
+
+                task.projectId === project.id &&
+
+                task.date === today
+
+            );
+
+ 
+
+            // Grupuj zadania i oblicz statystyki
+
+            const taskGroups = {};
+
+            todayTasks.forEach(task => {
+
+                const taskKey = task.task;
+
+                if (!taskGroups[taskKey] || new Date(task.date + ' ' + task.time) > new Date(taskGroups[taskKey].date + ' ' + taskGroups[taskKey].time)) {
+
+                    taskGroups[taskKey] = task;
+
+                }
+
+            });
+
+ 
+
+            const totalTime = Object.values(taskGroups).reduce((sum, task) => sum + task.duration, 0);
+
+            const completedTasks = taskHistory.filter(task => task.projectId === project.id).length;
+
+            const totalTasks = Object.values(project.categories || {}).reduce((sum, cat) => sum + cat.length, 0);
+
+            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+ 
+
+            const shareText = `📋 Raport z projektu ${project.name}:
+
+⏱️ Czas pracy: ${formatTime(totalTime)}
+
+✅ Zadania: ${Object.keys(taskGroups).length}
+
+📈 Postęp: ${progress}%
+
+ 
+
+Zobacz pełny raport: [Link będzie dostępny po wdrożeniu na serwer]`;
+
+ 
+
+            if (navigator.share) {
+
+                navigator.share({
+
+                    title: `Raport dzienny - ${project.name}`,
+
+                    text: shareText
+
+                });
+
+            } else {
+
+                // Fallback - skopiuj do schowka
+
+                navigator.clipboard.writeText(shareText).then(() => {
+
+                    showNotification('🔗 Raport skopiowany do schowka', 'success');
+
+                });
+
+            }
+
+        }
+
+ 
+
+        function closeModalOnBackdrop(event) {
+
+            if (event.target === document.getElementById('dailyReportModal')) {
+
+                closeDailyReportModal();
+
+            }
+
+        }
+
+ 
+
         // Funkcje pomocnicze
 
         function downloadCSV(csv, filename) {
@@ -4645,688 +5813,6 @@
                 notification.classList.remove('show');
 
             }, 3000);
-
-        }
-
- 
-
-        // Daily Report Functions
-
-        function generateDailyReport(projectId) {
-
-            const project = projects.find(p => p.id === projectId);
-
-            if (!project) return;
-
- 
-
-            const today = new Date().toDateString();
-
-            const todayTasks = taskHistory.filter(task =>
-
-                task.projectId === projectId &&
-
-                task.date === today
-
-            );
-
- 
-
-            // Oblicz postęp projektu
-
-            const totalTasks = Object.values(project.categories || {}).reduce((sum, cat) => sum + cat.length, 0);
-
-            const completedTasks = taskHistory.filter(task => task.projectId === projectId).length;
-
-            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
- 
-
-            // Oblicz statystyki
-
-            const totalTime = todayTasks.reduce((sum, task) => sum + task.duration, 0);
-
-            const activeTasksCount = activeTasks.filter(t => t.projectId === projectId).length;
-
-            const workersToday = Math.max(...todayTasks.map(t => t.teamSize || 1), 0);
-
- 
-
-            // Znajdź następne zadania do wykonania
-
-            const nextTasks = getNextTasks(project, completedTasks);
-
- 
-
-            // Pokaż modal z raportem
-
-            showDailyReportModal(project, todayTasks, {
-
-                totalTime,
-
-                completedTasksCount: todayTasks.length,
-
-                activeTasks: activeTasksCount,
-
-                workers: workersToday,
-
-                progress,
-
-                totalTasks,
-
-                nextTasks
-
-            });
-
-        }
-
- 
-
-        function getNextTasks(project, completedCount) {
-
-            const nextTasks = [];
-
-           
-
-            Object.entries(project.categories || {}).forEach(([category, tasks]) => {
-
-                tasks.forEach(task => {
-
-                    // Sprawdź czy zadanie nie zostało jeszcze ukończone
-
-                    const isCompleted = taskHistory.some(h =>
-
-                        h.projectId === project.id &&
-
-                        h.task === task.name
-
-                    );
-
-                   
-
-                    if (!isCompleted && nextTasks.length < 5) {
-
-                        nextTasks.push({
-
-                            name: task.name,
-
-                            category: category,
-
-                            estimatedTime: task.estimatedTime,
-
-                            teamSize: task.teamSize || 1
-
-                        });
-
-                    }
-
-                });
-
-            });
-
- 
-
-            return nextTasks;
-
-        }
-
- 
-
-        function showDailyReportModal(project, todayTasks, stats) {
-
-            const modal = document.getElementById('dailyReportModal');
-
-            const content = document.getElementById('reportContent');
-
-           
-
-            const currentDate = new Date().toLocaleDateString('pl-PL', {
-
-                weekday: 'long',
-
-                year: 'numeric',
-
-                month: 'long',
-
-                day: 'numeric'
-
-            });
-
- 
-
-            content.innerHTML = `
-
-                <div class="report-summary">
-
-                    <h3 style="color: #2d3748; margin-bottom: 15px; text-align: center;">
-
-                        ${project.icon} ${project.name}
-
-                    </h3>
-
-                    <p style="text-align: center; color: #718096; margin-bottom: 20px;">
-
-                        ${currentDate}
-
-                    </p>
-
-                   
-
-                    <div class="summary-grid">
-
-                        <div class="summary-item">
-
-                            <div class="summary-value">${formatDuration(stats.totalTime)}</div>
-
-                            <div class="summary-label">Czas pracy</div>
-
-                        </div>
-
-                        <div class="summary-item">
-
-                            <div class="summary-value">${stats.completedTasksCount}</div>
-
-                            <div class="summary-label">Ukończone zadania</div>
-
-                        </div>
-
-                        <div class="summary-item">
-
-                            <div class="summary-value">${stats.workers}</div>
-
-                            <div class="summary-label">Pracownicy</div>
-
-                        </div>
-
-                        <div class="summary-item">
-
-                            <div class="summary-value">${stats.activeTasks}</div>
-
-                            <div class="summary-label">Aktywne zadania</div>
-
-                        </div>
-
-                    </div>
-
- 
-
-                    <div style="margin-bottom: 10px;">
-
-                        <strong>Postęp projektu: ${stats.progress}%</strong>
-
-                        <span style="color: #718096; margin-left: 10px;">
-
-                            (${taskHistory.filter(t => t.projectId === project.id).length}/${stats.totalTasks} zadań)
-
-                        </span>
-
-                    </div>
-
-                    <div class="progress-bar-container">
-
-                        <div class="progress-bar-fill" style="width: ${stats.progress}%">
-
-                            ${stats.progress}%
-
-                        </div>
-
-                    </div>
-
-                </div>
-
- 
-
-                ${todayTasks.length > 0 ? `
-
-                    <div class="completed-tasks">
-
-                        <h4>✅ Ukończone zadania dzisiaj:</h4>
-
-                        ${todayTasks.map(task => `
-
-                            <div class="task-item">
-
-                                <div class="task-details">
-
-                                    <div class="task-name">${task.task}</div>
-
-                                    <div class="task-meta">
-
-                                        ${task.category} • ${task.teamSize || 1} osób •
-
-                                        ${task.startTime.toLocaleTimeString('pl-PL', {hour: '2-digit', minute: '2-digit'})}
-
-                                    </div>
-
-                                </div>
-
-                                <div class="task-time">${formatDuration(task.duration)}</div>
-
-                            </div>
-
-                        `).join('')}
-
-                    </div>
-
-                ` : `
-
-                    <div class="completed-tasks">
-
-                        <p style="text-align: center; color: #718096; padding: 20px;">
-
-                            Brak ukończonych zadań dzisiaj
-
-                        </p>
-
-                    </div>
-
-                `}
-
- 
-
-                ${stats.nextTasks.length > 0 ? `
-
-                    <div class="next-tasks">
-
-                        <h4>🔄 Następne zadania do wykonania:</h4>
-
-                        ${stats.nextTasks.map(task => `
-
-                            <div class="next-task-item">
-
-                                <div>
-
-                                    <strong>${task.name}</strong>
-
-                                    <span style="color: #a0aec0; margin-left: 10px;">
-
-                                        ${task.category} • ${task.teamSize} osób
-
-                                    </span>
-
-                                </div>
-
-                                <div class="next-task-time">${formatDuration(task.estimatedTime * 3600000)}</div>
-
-                            </div>
-
-                        `).join('')}
-
-                    </div>
-
-                ` : ''}
-
- 
-
-                <div class="send-options">
-
-                    <button class="send-btn download" onclick="downloadDailyReport('${project.id}')">
-
-                        💾 Pobierz CSV
-
-                    </button>
-
-                    <button class="send-btn email" onclick="sendReportEmail('${project.id}')">
-
-                        📧 Wyślij email
-
-                    </button>
-
-                    <button class="send-btn sms" onclick="sendReportSMS('${project.id}')">
-
-                        📱 Wyślij SMS
-
-                    </button>
-
-                    <button class="send-btn" onclick="shareReportLink('${project.id}')">
-
-                        🔗 Udostępnij
-
-                    </button>
-
-                </div>
-
-            `;
-
- 
-
-            modal.classList.add('show');
-
-        }
-
- 
-
-        function closeDailyReportModal() {
-
-            document.getElementById('dailyReportModal').classList.remove('show');
-
-        }
-
- 
-
-        function closeModalOnBackdrop(event) {
-
-            if (event.target === document.getElementById('dailyReportModal')) {
-
-                closeDailyReportModal();
-
-            }
-
-        }
-
- 
-
-        function downloadDailyReport(projectId) {
-
-            const project = projects.find(p => p.id === projectId);
-
-            if (!project) return;
-
- 
-
-            const today = new Date().toDateString();
-
-            const todayTasks = taskHistory.filter(task =>
-
-                task.projectId === projectId &&
-
-                task.date === today
-
-            );
-
- 
-
-            const totalTime = todayTasks.reduce((sum, task) => sum + task.duration, 0);
-
-            const completedTasks = taskHistory.filter(task => task.projectId === projectId).length;
-
-            const totalTasks = Object.values(project.categories || {}).reduce((sum, cat) => sum + cat.length, 0);
-
-            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
- 
-
-            let csv = 'RAPORT DZIENNY\n';
-
-            csv += `Projekt,${project.name}\n`;
-
-            csv += `Klient,${project.client}\n`;
-
-            csv += `Data,${new Date().toLocaleDateString('pl-PL')}\n`;
-
-            csv += `Powierzchnia,${project.area}m²\n`;
-
-            csv += `Czas pracy dzisiaj,${formatDuration(totalTime)}\n`;
-
-            csv += `Ukończone zadania dzisiaj,${todayTasks.length}\n`;
-
-            csv += `Postęp projektu,${progress}% (${completedTasks}/${totalTasks})\n`;
-
-            csv += '\n';
-
-           
-
-            csv += 'UKOŃCZONE ZADANIA DZISIAJ\n';
-
-            csv += 'Zadanie,Kategoria,Czas rozpoczęcia,Czas trwania,Pracownicy,Wydajność\n';
-
-           
-
-            todayTasks.forEach(task => {
-
-                const duration = Math.round(task.duration / (1000 * 60));
-
-                csv += `"${task.task}","${task.category}","${task.startTime.toLocaleTimeString('pl-PL')}","${duration} min","${task.teamSize || 1}","${task.performanceText || 'Brak danych'}"\n`;
-
-            });
-
- 
-
-            const filename = `raport-dzienny-${project.name.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.csv`;
-
-            downloadCSV(csv, filename);
-
-           
-
-            showNotification('📥 Raport dzienny pobrany', 'success');
-
-        }
-
- 
-
-        function sendReportEmail(projectId) {
-
-            const project = projects.find(p => p.id === projectId);
-
-            if (!project) return;
-
- 
-
-            const today = new Date().toDateString();
-
-            const todayTasks = taskHistory.filter(task =>
-
-                task.projectId === projectId &&
-
-                task.date === today
-
-            );
-
- 
-
-            const totalTime = todayTasks.reduce((sum, task) => sum + task.duration, 0);
-
-            const completedTasks = taskHistory.filter(task => task.projectId === projectId).length;
-
-            const totalTasks = Object.values(project.categories || {}).reduce((sum, cat) => sum + cat.length, 0);
-
-            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
- 
-
-            const subject = `Raport dzienny - ${project.name} - ${new Date().toLocaleDateString('pl-PL')}`;
-
-            const body = `📋 RAPORT DZIENNY
-
- 
-
-🏗️ Projekt: ${project.name}
-
-👥 Klient: ${project.client}
-
-📅 Data: ${new Date().toLocaleDateString('pl-PL')}
-
-📐 Powierzchnia: ${project.area}m²
-
- 
-
-📊 PODSUMOWANIE:
-
-⏱️ Czas pracy dzisiaj: ${formatDuration(totalTime)}
-
-✅ Ukończone zadania dzisiaj: ${todayTasks.length}
-
-📈 Postęp projektu: ${progress}% (${completedTasks}/${totalTasks} zadań)
-
- 
-
-📋 UKOŃCZONE ZADANIA:
-
-${todayTasks.map(task =>
-
-    `• ${task.task} - ${formatDuration(task.duration)} (${task.teamSize || 1} osób)`
-
-).join('\n')}
-
- 
-
----
-
-Raport wygenerowany automatycznie z systemu Kierownik Pro`;
-
- 
-
-            const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-            window.open(mailtoLink);
-
-           
-
-            showNotification('📧 Otwarto aplikację email', 'info');
-
-        }
-
- 
-
-        function sendReportSMS(projectId) {
-
-            const project = projects.find(p => p.id === projectId);
-
-            if (!project) return;
-
- 
-
-            const today = new Date().toDateString();
-
-            const todayTasks = taskHistory.filter(task =>
-
-                task.projectId === projectId &&
-
-                task.date === today
-
-            );
-
- 
-
-            const totalTime = todayTasks.reduce((sum, task) => sum + task.duration, 0);
-
-            const completedTasks = taskHistory.filter(task => task.projectId === projectId).length;
-
-            const totalTasks = Object.values(project.categories || {}).reduce((sum, cat) => sum + cat.length, 0);
-
-            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
- 
-
-            const message = `📋 ${project.name} - ${new Date().toLocaleDateString('pl-PL')}
-
-⏱️ Czas: ${formatDuration(totalTime)}
-
-✅ Zadania: ${todayTasks.length}
-
-📈 Postęp: ${progress}%`;
-
- 
-
-            const smsLink = `sms:?body=${encodeURIComponent(message)}`;
-
-            window.open(smsLink);
-
-           
-
-            showNotification('📱 Otwarto aplikację SMS', 'info');
-
-        }
-
- 
-
-        function shareReportLink(projectId) {
-
-            const project = projects.find(p => p.id === projectId);
-
-            if (!project) return;
-
- 
-
-            const today = new Date().toDateString();
-
-            const todayTasks = taskHistory.filter(task =>
-
-                task.projectId === projectId &&
-
-                task.date === today
-
-            );
-
- 
-
-            const totalTime = todayTasks.reduce((sum, task) => sum + task.duration, 0);
-
-            const completedTasks = taskHistory.filter(task => task.projectId === projectId).length;
-
-            const totalTasks = Object.values(project.categories || {}).reduce((sum, cat) => sum + cat.length, 0);
-
-            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
- 
-
-            const reportData = {
-
-                project: project.name,
-
-                client: project.client,
-
-                date: new Date().toLocaleDateString('pl-PL'),
-
-                totalTime: formatDuration(totalTime),
-
-                completedTasks: todayTasks.length,
-
-                progress: progress,
-
-                tasks: todayTasks.map(task => ({
-
-                    name: task.task,
-
-                    category: task.category,
-
-                    duration: formatDuration(task.duration),
-
-                    teamSize: task.teamSize || 1
-
-                }))
-
-            };
-
- 
-
-            // Stwórz link do udostępnienia (w prawdziwej aplikacji byłby to link do serwera)
-
-            const shareText = `📋 Raport z projektu ${project.name}:
-
-⏱️ Czas pracy: ${formatDuration(totalTime)}
-
-✅ Zadania: ${todayTasks.length}
-
-📈 Postęp: ${progress}%
-
- 
-
-Zobacz pełny raport: [Link będzie dostępny po wdrożeniu na serwer]`;
-
- 
-
-            if (navigator.share) {
-
-                navigator.share({
-
-                    title: `Raport dzienny - ${project.name}`,
-
-                    text: shareText
-
-                });
-
-            } else {
-
-                // Fallback - skopiuj do schowka
-
-                navigator.clipboard.writeText(shareText).then(() => {
-
-                    showNotification('🔗 Raport skopiowany do schowka', 'success');
-
-                });
-
-            }
 
         }
 
