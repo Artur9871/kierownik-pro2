@@ -913,6 +913,58 @@
             font-size: 14px;
         }
 
+        .info-item.overtime .info-value {
+            color: #f56565;
+            font-weight: bold;
+        }
+
+        .info-item.warning .info-value {
+            color: #ed8936;
+            font-weight: bold;
+        }
+
+        .info-item.normal .info-value {
+            color: #48bb78;
+        }
+
+        .info-item.no-plan .info-value {
+            color: #a0aec0;
+            font-style: italic;
+        }
+
+        .progress-fill.overtime {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        }
+
+        .comment-category-btn {
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .comment-category-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .comment-category-btn.active {
+            transform: translateY(-1px);
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
         .next-task-time {
             font-weight: 600;
             color: #667eea;
@@ -1962,7 +2014,7 @@
             saveDataSilent();
         }
 
-        function stopTask(taskId) {
+        async function stopTask(taskId) {
             const task = activeTasks.find(t => t.id === taskId);
             if (!task) return;
 
@@ -2012,7 +2064,10 @@
                 taskNameWithSession = `${task.task} (restart - sesja ${task.sessionCount})`;
             }
 
-            // Dodaj do historii
+            // Pokaż modal komentarza
+            const commentData = await showCommentModal(task.task, sessionTime, totalDayTime, performanceText);
+
+            // Dodaj do historii z komentarzem
             const historyEntry = {
                 id: Date.now().toString(),
                 projectId: task.projectId,
@@ -2028,6 +2083,8 @@
                 taskAction: task.taskAction,
                 sessionCount: task.sessionCount,
                 previousDayTime: previousSessionsTime, // Czas poprzednich sesji
+                comment: commentData ? commentData.text : null, // Tekst komentarza
+                commentCategory: commentData ? commentData.category : null, // Kategoria komentarza
                 date: today,
                 time: new Date().toLocaleTimeString('pl-PL')
             };
@@ -2049,7 +2106,8 @@
                 ` | Sesja ${task.sessionCount}: ${formatTime(sessionTime)}` : 
                 '';
             
-            showNotification(`✅ Zakończono: ${task.task}${sessionInfo} | ${performanceText}`, 'success');
+            const commentInfo = commentData ? ' | 💬 Z komentarzem' : '';
+            showNotification(`✅ Zakończono: ${task.task}${sessionInfo} | ${performanceText}${commentInfo}`, 'success');
         }
 
         function renderActiveTasks() {
@@ -2081,6 +2139,24 @@
                     Math.min((elapsedTime / task.estimatedTime) * 100, 100) : 0;
                 
                 const remainingTime = Math.max(task.estimatedTime - elapsedTime, 0);
+                const isOvertime = elapsedTime > task.estimatedTime;
+                const overtimeAmount = Math.max(elapsedTime - task.estimatedTime, 0);
+                
+                // Dla kierownika - czas pozostały/przekroczony zamiast procentów
+                let timeStatusText = '';
+                let timeStatusClass = '';
+                if (task.estimatedTime > 0) {
+                    if (isOvertime) {
+                        timeStatusText = `⏰ Przekroczono o: ${formatTime(overtimeAmount)}`;
+                        timeStatusClass = 'overtime';
+                    } else {
+                        timeStatusText = `⏱️ Pozostało: ${formatTime(remainingTime)}`;
+                        timeStatusClass = remainingTime < (task.estimatedTime * 0.1) ? 'warning' : 'normal';
+                    }
+                } else {
+                    timeStatusText = '⏱️ Brak planu czasowego';
+                    timeStatusClass = 'no-plan';
+                }
                 
                 taskDiv.innerHTML = `
                     <div class="task-header">
@@ -2098,9 +2174,9 @@
                             <div class="info-label">Czas pracy</div>
                             <div class="info-value">${formatTime(elapsedTime)}</div>
                         </div>
-                        <div class="info-item">
-                            <div class="info-label">Pozostało</div>
-                            <div class="info-value">${formatTime(remainingTime)}</div>
+                        <div class="info-item ${timeStatusClass}">
+                            <div class="info-label">Status czasu</div>
+                            <div class="info-value" style="font-size: 13px; line-height: 1.2;">${timeStatusText}</div>
                         </div>
                     </div>
                     
@@ -2110,7 +2186,7 @@
                             <span>Plan: ${formatTime(task.estimatedTime)}</span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${progress}%"></div>
+                            <div class="progress-fill ${isOvertime ? 'overtime' : ''}" style="width: ${Math.min(progress, 100)}%"></div>
                         </div>
                     </div>
                     
@@ -2142,11 +2218,39 @@
                 Math.min((elapsedTime / task.estimatedTime) * 100, 100) : 0;
             
             const remainingTime = Math.max(task.estimatedTime - elapsedTime, 0);
+            const isOvertime = elapsedTime > task.estimatedTime;
+            const overtimeAmount = Math.max(elapsedTime - task.estimatedTime, 0);
+            
+            // Dla kierownika - czas pozostały/przekroczony
+            let timeStatusText = '';
+            let timeStatusClass = '';
+            if (task.estimatedTime > 0) {
+                if (isOvertime) {
+                    timeStatusText = `⏰ Przekroczono o: ${formatTime(overtimeAmount)}`;
+                    timeStatusClass = 'overtime';
+                } else {
+                    timeStatusText = `⏱️ Pozostało: ${formatTime(remainingTime)}`;
+                    timeStatusClass = remainingTime < (task.estimatedTime * 0.1) ? 'warning' : 'normal';
+                }
+            } else {
+                timeStatusText = '⏱️ Brak planu czasowego';
+                timeStatusClass = 'no-plan';
+            }
 
             // Aktualizuj tylko dynamiczne elementy
-            taskElement.querySelector('.info-value').textContent = formatTime(elapsedTime);
-            taskElement.querySelectorAll('.info-value')[1].textContent = formatTime(remainingTime);
-            taskElement.querySelector('.progress-fill').style.width = `${progress}%`;
+            const infoValues = taskElement.querySelectorAll('.info-value');
+            infoValues[0].textContent = formatTime(elapsedTime);
+            infoValues[1].textContent = timeStatusText;
+            
+            // Aktualizuj klasę dla statusu czasu
+            const timeStatusItem = taskElement.querySelectorAll('.info-item')[1];
+            timeStatusItem.className = `info-item ${timeStatusClass}`;
+            
+            // Aktualizuj progress bar
+            const progressFill = taskElement.querySelector('.progress-fill');
+            progressFill.style.width = `${Math.min(progress, 100)}%`;
+            progressFill.className = `progress-fill ${isOvertime ? 'overtime' : ''}`;
+            
             taskElement.querySelector('.task-progress span').textContent = `Postęp: ${Math.round(progress)}%`;
             
             // Aktualizuj przycisk play/pause
@@ -2212,6 +2316,8 @@
             projectHistory.forEach(task => {
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
+                historyItem.style.flexDirection = 'column';
+                historyItem.style.alignItems = 'flex-start';
                 
                 // Pokaż informacje o sesji dla zadań kontynuowanych/restartowanych
                 let timeDisplay = '';
@@ -2225,17 +2331,52 @@
                     timeDisplay = formatTime(task.duration);
                 }
                 
+                // Ikona kategorii komentarza
+                let commentIcon = '';
+                if (task.comment) {
+                    switch(task.commentCategory) {
+                        case 'success':
+                            commentIcon = '✅';
+                            break;
+                        case 'problem':
+                            commentIcon = '⚠️';
+                            break;
+                        case 'note':
+                            commentIcon = '📝';
+                            break;
+                        default:
+                            commentIcon = '💬';
+                    }
+                }
+                
                 historyItem.innerHTML = `
-                    <div>
-                        <div class="history-task">${taskDisplayName}</div>
-                        <div class="history-details">
-                            ${task.date} ${task.time} | ${task.category} | 
-                            👥 ${task.teamSize} osób | ⏱️ ${timeDisplay}
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: ${task.comment ? '10px' : '0'};">
+                        <div>
+                            <div class="history-task" style="display: flex; align-items: center; gap: 8px;">
+                                ${taskDisplayName}
+                                ${task.comment ? `<span style="font-size: 16px;" title="Zadanie ma komentarz">${commentIcon}</span>` : ''}
+                            </div>
+                            <div class="history-details">
+                                ${task.date} ${task.time} | ${task.category} | 
+                                👥 ${task.teamSize} osób | ⏱️ ${timeDisplay}
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="history-details">
+                                ${task.performanceText}
+                            </div>
+                            <button onclick="editTaskComment('${task.id}')" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: all 0.2s ease;" title="${task.comment ? 'Edytuj komentarz' : 'Dodaj komentarz'}" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                                ${task.comment ? '✏️' : '💬'}
+                            </button>
                         </div>
                     </div>
-                    <div class="history-details">
-                        ${task.performanceText}
-                    </div>
+                    ${task.comment ? `
+                        <div style="background: rgba(255, 255, 255, 0.08); padding: 10px; border-radius: 6px; margin-top: 8px; width: 100%; border-left: 3px solid ${task.commentCategory === 'success' ? '#48bb78' : task.commentCategory === 'problem' ? '#f56565' : '#667eea'};">
+                            <div style="color: rgba(255, 255, 255, 0.9); font-size: 13px; line-height: 1.4;">
+                                ${commentIcon} <strong>Komentarz:</strong> ${task.comment}
+                            </div>
+                        </div>
+                    ` : ''}
                 `;
                 
                 container.appendChild(historyItem);
@@ -2436,7 +2577,7 @@
 
         function saveData() {
             const data = {
-                version: '4.2',
+                version: '4.4',
                 lastSaved: new Date().toISOString(),
                 projects: projects,
                 activeTasks: activeTasks,
@@ -2454,7 +2595,7 @@
 
         function saveDataSilent() {
             const data = {
-                version: '4.2',
+                version: '4.4',
                 lastSaved: new Date().toISOString(),
                 projects: projects,
                 activeTasks: activeTasks,
@@ -2574,7 +2715,7 @@
 
         function backupData() {
             const data = {
-                version: '4.2',
+                version: '4.4',
                 exported: new Date().toISOString(),
                 projects: projects,
                 activeTasks: activeTasks,
@@ -2636,15 +2777,16 @@
                 return;
             }
 
-            const csvHeader = 'Projekt,Zadanie,Kategoria,Data,Czas,Czas pracy (min),Plan (min),Odchylenie (%),Zespół,Wydajność\n';
+            const csvHeader = 'Projekt,Zadanie,Kategoria,Data,Czas,Czas pracy (min),Plan (min),Odchylenie (%),Zespół,Wydajność,Komentarz\n';
             const csvData = taskHistory.map(task => {
                 const project = projects.find(p => p.id === task.projectId);
                 const projectName = project ? project.name : 'Nieznany projekt';
                 const durationMin = Math.round(task.duration / 60000);
                 const planMin = Math.round(task.estimatedTime / 60000);
                 const deviation = task.efficiency ? (task.efficiency - 100).toFixed(1) : '0';
+                const comment = task.comment ? `"${task.comment.replace(/"/g, '""')}"` : 'Brak komentarza';
                 
-                return `"${projectName}","${task.task}","${task.category}","${task.date}","${task.time}",${durationMin},${planMin},${deviation},${task.teamSize},"${task.performanceText}"`;
+                return `"${projectName}","${task.task}","${task.category}","${task.date}","${task.time}",${durationMin},${planMin},${deviation},${task.teamSize},"${task.performanceText}",${comment}`;
             }).join('\n');
 
             const blob = new Blob([csvHeader + csvData], { type: 'text/csv;charset=utf-8;' });
@@ -2678,7 +2820,155 @@
             }
         }
 
-        // Funkcja custom modal dla wyboru akcji zadania
+        // Funkcja modal komentarza po zakończeniu zadania
+        function showCommentModal(taskName, sessionTime, totalDayTime, performanceText) {
+            return new Promise((resolve) => {
+                const modal = document.createElement('div');
+                modal.className = 'report-modal show';
+                modal.style.zIndex = '1001';
+                
+                let selectedCategory = 'note'; // Domyślna kategoria
+                
+                modal.innerHTML = `
+                    <div class="report-content" style="max-width: 500px;">
+                        <div class="report-header">
+                            <div class="report-title">💬 Komentarz do zadania</div>
+                        </div>
+                        
+                        <div style="padding: 20px;">
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                <h4 style="color: #2d3748; margin-bottom: 10px;">${taskName}</h4>
+                                <div style="color: #718096; font-size: 14px;">
+                                    ⏱️ Czas sesji: <strong>${formatTime(sessionTime)}</strong><br>
+                                    📊 Łącznie dzisiaj: <strong>${formatTime(totalDayTime)}</strong><br>
+                                    📈 Wydajność: <strong>${performanceText}</strong>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; color: #2d3748; font-weight: 600; margin-bottom: 8px;">
+                                    Dodaj komentarz do zadania (opcjonalne):
+                                </label>
+                                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                    <button class="comment-category-btn" data-category="success" style="background: #48bb78; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer;">
+                                        ✅ Sukces
+                                    </button>
+                                    <button class="comment-category-btn" data-category="problem" style="background: #f56565; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer;">
+                                        ⚠️ Problem
+                                    </button>
+                                    <button class="comment-category-btn active" data-category="note" style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; box-shadow: 0 0 0 2px #4c51bf;">
+                                        📝 Obserwacja
+                                    </button>
+                                </div>
+                                <textarea id="taskComment" placeholder="Np. Zadanie poszło szybciej dzięki nowym narzędziom, Problem z dostępem do materiałów, Powierzchnia była w gorszym stanie niż oczekiwano..." 
+                                          style="width: 100%; height: 100px; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; resize: vertical; font-family: inherit;"></textarea>
+                                <div style="text-align: right; color: #a0aec0; font-size: 12px; margin-top: 5px;">
+                                    <span id="commentCounter">0</span> / 500 znaków
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; justify-content: end;">
+                                <button class="send-btn" style="background: #a0aec0;" onclick="resolveComment(null)">
+                                    Pomiń komentarz
+                                </button>
+                                <button class="send-btn" style="background: #48bb78;" onclick="resolveCommentWithText()">
+                                    💾 Zapisz z komentarzem
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // Event listeners dla kategorii i licznika
+                const textarea = modal.querySelector('#taskComment');
+                const counter = modal.querySelector('#commentCounter');
+                const categoryBtns = modal.querySelectorAll('.comment-category-btn');
+                
+                // Licznik znaków
+                textarea.addEventListener('input', function() {
+                    const length = this.value.length;
+                    counter.textContent = length;
+                    if (length > 500) {
+                        this.value = this.value.substring(0, 500);
+                        counter.textContent = 500;
+                    }
+                    counter.style.color = length > 450 ? '#f56565' : '#a0aec0';
+                });
+                
+                // Kategorie komentarzy - szablony
+                categoryBtns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const category = this.dataset.category;
+                        selectedCategory = category;
+                        
+                        // Usuń active z wszystkich przycisków
+                        categoryBtns.forEach(b => {
+                            b.classList.remove('active');
+                            b.style.boxShadow = 'none';
+                        });
+                        
+                        // Dodaj active do klikniętego
+                        this.classList.add('active');
+                        this.style.boxShadow = category === 'success' ? '0 0 0 2px #38a169' : 
+                                                category === 'problem' ? '0 0 0 2px #e53e3e' : '0 0 0 2px #4c51bf';
+                        
+                        let template = '';
+                        switch(category) {
+                            case 'success':
+                                template = 'SUKCES: ';
+                                break;
+                            case 'problem':
+                                template = 'PROBLEM: ';
+                                break;
+                            case 'note':
+                                template = 'OBSERWACJA: ';
+                                break;
+                        }
+                        
+                        textarea.value = template;
+                        textarea.focus();
+                        textarea.setSelectionRange(template.length, template.length);
+                        
+                        // Aktualizuj licznik
+                        counter.textContent = template.length;
+                    });
+                });
+                
+                // Focus na textarea
+                setTimeout(() => textarea.focus(), 100);
+                
+                // Funkcje zamykania modal
+                window.resolveComment = (commentData) => {
+                    document.body.removeChild(modal);
+                    delete window.resolveComment;
+                    delete window.resolveCommentWithText;
+                    resolve(commentData);
+                };
+                
+                window.resolveCommentWithText = () => {
+                    const comment = textarea.value.trim();
+                    if (comment) {
+                        resolveComment({
+                            text: comment,
+                            category: selectedCategory
+                        });
+                    } else {
+                        resolveComment(null);
+                    }
+                };
+                
+                // ESC key
+                const escHandler = (e) => {
+                    if (e.key === 'Escape') {
+                        document.removeEventListener('keydown', escHandler);
+                        resolveComment(null);
+                    }
+                };
+                document.addEventListener('keydown', escHandler);
+            });
+        }
         function showTaskActionModal(taskName, previousDayTime, sessionCount) {
             return new Promise((resolve) => {
                 const modal = document.createElement('div');
@@ -2873,18 +3163,41 @@
                 ${uniqueTodayTasks.length > 0 ? `
                     <div class="completed-tasks">
                         <h4>✅ Ukończone zadania dzisiaj:</h4>
-                        ${uniqueTodayTasks.map(task => `
-                            <div class="task-item">
-                                <div class="task-details">
-                                    <div class="task-name">${task.task}</div>
-                                    <div class="task-meta">
-                                        ${task.category} • ${task.teamSize || 1} osób • 
-                                        ${task.time}
+                        ${uniqueTodayTasks.map(task => {
+                            let commentIcon = '';
+                            if (task.comment) {
+                                switch(task.commentCategory) {
+                                    case 'success': commentIcon = '✅'; break;
+                                    case 'problem': commentIcon = '⚠️'; break;
+                                    case 'note': commentIcon = '📝'; break;
+                                    default: commentIcon = '💬';
+                                }
+                            }
+                            
+                            return `
+                            <div class="task-item" style="${task.comment ? 'flex-direction: column; align-items: flex-start;' : ''}">
+                                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                    <div class="task-details">
+                                        <div class="task-name" style="display: flex; align-items: center; gap: 8px;">
+                                            ${task.task}
+                                            ${task.comment ? `<span style="font-size: 14px;" title="Zadanie ma komentarz">${commentIcon}</span>` : ''}
+                                        </div>
+                                        <div class="task-meta">
+                                            ${task.category} • ${task.teamSize || 1} osób • 
+                                            ${task.time}
+                                        </div>
                                     </div>
+                                    <div class="task-time">${formatTime(task.duration)}</div>
                                 </div>
-                                <div class="task-time">${formatTime(task.duration)}</div>
+                                ${task.comment ? `
+                                    <div style="background: #f8fafc; padding: 8px; border-radius: 4px; margin-top: 8px; width: 100%; border-left: 3px solid ${task.commentCategory === 'success' ? '#48bb78' : task.commentCategory === 'problem' ? '#f56565' : '#667eea'};">
+                                        <div style="color: #4a5568; font-size: 12px; line-height: 1.3;">
+                                            ${commentIcon} <strong>Komentarz:</strong> ${task.comment}
+                                        </div>
+                                    </div>
+                                ` : ''}
                             </div>
-                        `).join('')}
+                        `}).join('')}
                     </div>
                 ` : `
                     <div class="completed-tasks">
@@ -3021,11 +3334,12 @@
             csv += '\n';
             
             csv += 'UKOŃCZONE ZADANIA DZISIAJ\n';
-            csv += 'Zadanie,Kategoria,Czas rozpoczęcia,Czas trwania,Pracownicy,Wydajność\n';
+            csv += 'Zadanie,Kategoria,Czas rozpoczęcia,Czas trwania,Pracownicy,Wydajność,Komentarz\n';
             
             Object.values(taskGroups).forEach(task => {
                 const duration = Math.round(task.duration / (1000 * 60));
-                csv += `"${task.task}","${task.category}","${task.time}","${duration} min","${task.teamSize || 1}","${task.performanceText || 'Brak danych'}"\n`;
+                const comment = task.comment ? `"${task.comment.replace(/"/g, '""')}"` : 'Brak komentarza';
+                csv += `"${task.task}","${task.category}","${task.time}","${duration} min","${task.teamSize || 1}","${task.performanceText || 'Brak danych'}",${comment}\n`;
             });
 
             const filename = `raport-dzienny-${project.name.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.csv`;
@@ -3075,9 +3389,14 @@
 📈 Postęp projektu: ${progress}% (${completedTasks}/${totalTasks} zadań)
 
 📋 UKOŃCZONE ZADANIA:
-${Object.values(taskGroups).map(task => 
-    `• ${task.task} - ${formatTime(task.duration)} (${task.teamSize || 1} osób)`
-).join('\n')}
+${Object.values(taskGroups).map(task => {
+    let line = `• ${task.task} - ${formatTime(task.duration)} (${task.teamSize || 1} osób)`;
+    if (task.comment) {
+        const icon = task.commentCategory === 'success' ? '✅' : task.commentCategory === 'problem' ? '⚠️' : '📝';
+        line += `\n  ${icon} Komentarz: ${task.comment}`;
+    }
+    return line;
+}).join('\n')}
 
 ---
 Raport wygenerowany automatycznie z systemu Kierownik Pro`;
@@ -3159,7 +3478,21 @@ Raport wygenerowany automatycznie z systemu Kierownik Pro`;
 📈 Postęp: ${progress}%
 
 Data: ${new Date().toLocaleDateString('pl-PL')}
-Szczegóły: ${Object.values(taskGroups).map(t => `${t.task} (${formatTime(t.duration)})`).join(', ')}`;
+Szczegóły: ${Object.values(taskGroups).map(t => {
+    let detail = `${t.task} (${formatTime(t.duration)})`;
+    if (t.comment) {
+        const icon = t.commentCategory === 'success' ? '✅' : t.commentCategory === 'problem' ? '⚠️' : '📝';
+        detail += ` ${icon}`;
+    }
+    return detail;
+}).join(', ')}
+
+${Object.values(taskGroups).filter(t => t.comment).length > 0 ? `
+💬 Komentarze:
+${Object.values(taskGroups).filter(t => t.comment).map(t => {
+    const icon = t.commentCategory === 'success' ? '✅' : t.commentCategory === 'problem' ? '⚠️' : '📝';
+    return `${icon} ${t.task}: ${t.comment}`;
+}).join('\n')}` : ''}`;
 
             if (navigator.share) {
                 navigator.share({
