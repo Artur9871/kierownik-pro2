@@ -950,6 +950,147 @@
             transform: translateY(-1px);
         }
 
+        .timeline-calendar {
+            display: grid;
+            gap: 20px;
+        }
+
+        .timeline-day {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+
+        .day-info {
+            flex: 1;
+        }
+
+        .day-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-direction: column;
+            text-align: right;
+        }
+
+        .day-tasks {
+            display: grid;
+            gap: 10px;
+        }
+
+        .timeline-task {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+            cursor: grab;
+        }
+
+        .timeline-task:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .timeline-task.completed {
+            background: rgba(72, 187, 120, 0.15);
+            border-color: rgba(72, 187, 120, 0.3);
+            opacity: 0.8;
+        }
+
+        .timeline-task.blocked {
+            background: rgba(160, 174, 192, 0.1);
+            border-color: rgba(160, 174, 192, 0.2);
+            opacity: 0.6;
+        }
+
+        .timeline-task:active {
+            cursor: grabbing;
+        }
+
+        .task-header-timeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .task-info-timeline {
+            flex: 1;
+        }
+
+        .task-name-timeline {
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .task-meta-timeline {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+        }
+
+        .task-actions-timeline {
+            display: flex;
+            gap: 5px;
+        }
+
+        .day-notes {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border-left: 3px solid #667eea;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .calendar-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .day-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .day-actions {
+                flex-direction: row;
+                align-self: stretch;
+                justify-content: space-between;
+            }
+            
+            .task-header-timeline {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .task-actions-timeline {
+                align-self: flex-end;
+            }
+        }
+
         .history-item {
             background: rgba(255, 255, 255, 0.1);
             padding: 12px;
@@ -1555,10 +1696,49 @@
                 </div>
 
                 <div id="calendarTab" class="timer-section">
-                    <h3 style="color: white;">📅 Kalendarz Projektowy</h3>
-                    <p style="color: rgba(255, 255, 255, 0.8);">Planowanie zadań i terminów realizacji</p>
-                    <div style="color: rgba(255, 255, 255, 0.6); font-style: italic; margin-top: 20px;">
-                        Sekcja w przygotowaniu...
+                    <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                        <div>
+                            <h3 style="color: white; margin: 0;">📅 Kalendarz Projektowy</h3>
+                            <p style="color: rgba(255, 255, 255, 0.8); margin: 5px 0 0 0; font-size: 14px;">Planowanie harmonogramu prac</p>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="nav-btn" onclick="generateTimeline()" style="background: #48bb78;">
+                                🔄 Wygeneruj harmonogram
+                            </button>
+                            <button class="nav-btn" onclick="toggleCalendarView()" id="calendarViewBtn">
+                                📊 Widok tygodniowy
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="calendarContent">
+                        <div id="noTimelineMessage" style="text-align: center; color: rgba(255, 255, 255, 0.7); padding: 40px;">
+                            <h4 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 15px;">📋 Brak harmonogramu</h4>
+                            <p style="margin-bottom: 20px;">Wygeneruj automatyczny harmonogram prac na podstawie zadań w projekcie</p>
+                            <button class="add-task-btn" onclick="generateTimeline()" style="font-size: 14px; padding: 10px 20px;">
+                                🔄 Wygeneruj harmonogram
+                            </button>
+                        </div>
+
+                        <div id="timelineContainer" style="display: none;">
+                            <!-- Harmonogram zostanie wygenerowany tutaj -->
+                        </div>
+                    </div>
+
+                    <div class="timeline-stats" id="timelineStats" style="display: none; background: rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 15px; margin-top: 20px;">
+                        <h4 style="color: white; margin-bottom: 10px;">📊 Statystyki harmonogramu</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;" id="statsContainer">
+                            <!-- Statystyki będą tutaj -->
+                        </div>
+                    </div>
+
+                    <div class="calendar-notes" style="background: rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 15px; margin-top: 20px; display: none;" id="calendarNotes">
+                        <h4 style="color: white; margin-bottom: 15px;">📝 Notatki do projektu</h4>
+                        <textarea id="projectNotesTextarea" placeholder="Dodaj ogólne notatki do projektu, informacje o dostawach, ograniczeniach czasowych, etc..." 
+                                  style="width: 100%; height: 80px; padding: 10px; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: white; font-size: 14px; resize: vertical; font-family: inherit;"></textarea>
+                        <button class="nav-btn" onclick="saveProjectNotes()" style="background: #48bb78; margin-top: 10px;">
+                            💾 Zapisz notatki
+                        </button>
                     </div>
                 </div>
 
@@ -1659,10 +1839,20 @@
             document.getElementById('projectView').style.display = 'block';
             document.getElementById('projectTitle').textContent = currentProject.name;
             
+            // Załaduj timeline jeśli istnieje
+            if (currentProject.timeline) {
+                projectTimeline = currentProject.timeline;
+            } else {
+                projectTimeline = [];
+            }
+            
             populateTaskSelector();
             renderActiveTasks();
             updateProjectStats();
             renderHistory();
+            renderTimeline(); // Renderuj kalendarz
+            updateTimelineStats(); // Aktualizuj statystyki
+            loadProjectNotes(); // Załaduj notatki
             showTab('time');
         }
 
@@ -2381,6 +2571,12 @@
                 
                 container.appendChild(historyItem);
             });
+            
+            // Odśwież timeline po ukończeniu zadania
+            if (projectTimeline.length > 0) {
+                updateTimelineStats();
+                renderTimeline();
+            }
         }
 
         // Event listenery
@@ -2577,7 +2773,7 @@
 
         function saveData() {
             const data = {
-                version: '4.4',
+                version: '4.5',
                 lastSaved: new Date().toISOString(),
                 projects: projects,
                 activeTasks: activeTasks,
@@ -2595,7 +2791,7 @@
 
         function saveDataSilent() {
             const data = {
-                version: '4.4',
+                version: '4.5',
                 lastSaved: new Date().toISOString(),
                 projects: projects,
                 activeTasks: activeTasks,
@@ -2715,7 +2911,7 @@
 
         function backupData() {
             const data = {
-                version: '4.4',
+                version: '4.5',
                 exported: new Date().toISOString(),
                 projects: projects,
                 activeTasks: activeTasks,
@@ -3555,7 +3751,380 @@ ${Object.values(taskGroups).filter(t => t.comment).map(t => {
             }, 3000);
         }
 
-        // Auto-save co 30 minut
+        // Kalendarz projektowy - zmienne globalne
+        let projectTimeline = [];
+        let calendarView = 'weekly'; // 'weekly' or 'daily'
+
+        // Generowanie harmonogramu projektu
+        function generateTimeline() {
+            if (!currentProject || !currentProject.categories) {
+                showNotification('❌ Wybierz projekt aby wygenerować harmonogram', 'error');
+                return;
+            }
+
+            // Utwórz punkt undo
+            createUndoPoint('Generowanie harmonogramu projektu');
+
+            // Logiczna kolejność kategorii budowlanych
+            const categoryOrder = [
+                'Przygotowanie',
+                'Przygotowanie Podłoża', 
+                'Aplikacja żywic',
+                'Wykończenie'
+            ];
+
+            projectTimeline = [];
+            let currentDay = 1;
+            let currentDayTime = 0;
+            const maxDayTime = 8 * 3600000; // 8 godzin w milisekundach
+
+            // Przetwarzaj kategorie w logicznej kolejności
+            categoryOrder.forEach(categoryName => {
+                const tasks = currentProject.categories[categoryName] || [];
+                
+                tasks.forEach(task => {
+                    const taskTime = (task.estimatedTime || 0) * 3600000; // konwersja na milisekundy
+                    
+                    // Sprawdź czy zadanie zmieści się w obecnym dniu
+                    if (currentDayTime + taskTime > maxDayTime && currentDayTime > 0) {
+                        currentDay++;
+                        currentDayTime = 0;
+                    }
+
+                    const timelineTask = {
+                        id: Date.now() + Math.random(),
+                        name: task.name,
+                        category: categoryName,
+                        estimatedTime: taskTime,
+                        teamSize: task.teamSize || 1,
+                        day: currentDay,
+                        completed: false,
+                        startTime: null,
+                        endTime: null,
+                        notes: '',
+                        type: task.type,
+                        efficiency: task.efficiency,
+                        unit: task.unit
+                    };
+
+                    projectTimeline.push(timelineTask);
+                    currentDayTime += taskTime;
+                });
+            });
+
+            // Dodaj harmonogram do projektu
+            currentProject.timeline = projectTimeline;
+            currentProject.timelineGenerated = new Date().toISOString();
+            
+            renderTimeline();
+            updateTimelineStats();
+            saveDataSilent();
+            
+            showNotification(`📅 Wygenerowano harmonogram na ${currentDay} dni`, 'success');
+        }
+
+        // Renderowanie harmonogramu
+        function renderTimeline() {
+            const container = document.getElementById('timelineContainer');
+            const noMessage = document.getElementById('noTimelineMessage');
+            const statsContainer = document.getElementById('timelineStats');
+            const notesContainer = document.getElementById('calendarNotes');
+
+            if (!projectTimeline || projectTimeline.length === 0) {
+                container.style.display = 'none';
+                noMessage.style.display = 'block';
+                statsContainer.style.display = 'none';
+                notesContainer.style.display = 'none';
+                return;
+            }
+
+            noMessage.style.display = 'none';
+            container.style.display = 'block';
+            statsContainer.style.display = 'block';
+            notesContainer.style.display = 'block';
+
+            // Grupuj zadania według dni
+            const dayGroups = {};
+            projectTimeline.forEach(task => {
+                if (!dayGroups[task.day]) {
+                    dayGroups[task.day] = [];
+                }
+                dayGroups[task.day].push(task);
+            });
+
+            let html = '<div class="timeline-calendar">';
+            
+            Object.keys(dayGroups).sort((a, b) => parseInt(a) - parseInt(b)).forEach(day => {
+                const dayTasks = dayGroups[day];
+                const dayTotalTime = dayTasks.reduce((sum, task) => sum + task.estimatedTime, 0);
+                const dayProgress = calculateDayProgress(parseInt(day));
+                
+                html += `
+                    <div class="timeline-day" data-day="${day}">
+                        <div class="day-header">
+                            <div class="day-info">
+                                <h4 style="color: white; margin: 0; display: flex; align-items: center; gap: 10px;">
+                                    📅 Dzień ${day}
+                                    <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 12px; font-size: 11px;">
+                                        ${formatTime(dayTotalTime)}
+                                    </span>
+                                </h4>
+                                <div style="color: rgba(255,255,255,0.7); font-size: 12px; margin-top: 2px;">
+                                    ${dayTasks.length} zadań | Zespół: ${Math.max(...dayTasks.map(t => t.teamSize))} osób
+                                </div>
+                            </div>
+                            <div class="day-actions">
+                                <button class="control-btn" onclick="addDayNote(${day})" title="Dodaj notatkę do dnia">
+                                    📝
+                                </button>
+                                <div style="font-size: 12px; color: rgba(255,255,255,0.8);">
+                                    ${Math.round(dayProgress)}% ukończone
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-progress-bar" style="background: rgba(255,255,255,0.1); height: 4px; border-radius: 2px; margin: 10px 0;">
+                            <div style="background: #48bb78; height: 100%; width: ${dayProgress}%; border-radius: 2px; transition: width 0.3s ease;"></div>
+                        </div>
+                        
+                        <div class="day-tasks" data-day="${day}">
+                            ${dayTasks.map(task => renderTimelineTask(task)).join('')}
+                        </div>
+                        
+                        ${getDayNotes(parseInt(day)) ? `
+                            <div class="day-notes" style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; margin-top: 10px; border-left: 3px solid #667eea;">
+                                <div style="color: rgba(255,255,255,0.9); font-size: 13px;">
+                                    📝 <strong>Notatka:</strong> ${getDayNotes(parseInt(day))}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+
+            // Inicjalizuj drag & drop
+            initializeDragAndDrop();
+        }
+
+        // Renderowanie pojedynczego zadania w harmonogramie
+        function renderTimelineTask(task) {
+            const isCompleted = isTaskCompleted(task.name);
+            const canStart = canStartTask(task);
+            
+            return `
+                <div class="timeline-task ${isCompleted ? 'completed' : ''} ${!canStart ? 'blocked' : ''}" 
+                     data-task-id="${task.id}" draggable="true">
+                    <div class="task-content">
+                        <div class="task-header-timeline">
+                            <div class="task-info-timeline">
+                                <div class="task-name-timeline" style="display: flex; align-items: center; gap: 8px;">
+                                    ${isCompleted ? '✅' : canStart ? '🔘' : '🔒'} ${task.name}
+                                </div>
+                                <div class="task-meta-timeline">
+                                    ${task.category} | ${formatTime(task.estimatedTime)} | 👥 ${task.teamSize} osób
+                                </div>
+                            </div>
+                            <div class="task-actions-timeline">
+                                ${canStart && !isCompleted ? `
+                                    <button class="control-btn" onclick="startTaskFromCalendar('${task.name}')" title="Rozpocznij zadanie">
+                                        ▶️
+                                    </button>
+                                ` : ''}
+                                <button class="control-btn" onclick="editTaskInTimeline('${task.id}')" title="Edytuj zadanie">
+                                    ⚙️
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Sprawdź czy zadanie może być rozpoczęte (zależności)
+        function canStartTask(task) {
+            // Sprawdź czy wszystkie zadania z poprzednich kategorii są ukończone
+            const categoryOrder = ['Przygotowanie', 'Przygotowanie Podłoża', 'Aplikacja żywic', 'Wykończenie'];
+            const currentCategoryIndex = categoryOrder.indexOf(task.category);
+            
+            if (currentCategoryIndex <= 0) return true; // Pierwsze zadania zawsze można rozpocząć
+            
+            // Sprawdź czy zadania z poprzednich kategorii są ukończone
+            for (let i = 0; i < currentCategoryIndex; i++) {
+                const prevCategoryTasks = projectTimeline.filter(t => t.category === categoryOrder[i]);
+                const uncompletedPrevTasks = prevCategoryTasks.filter(t => !isTaskCompleted(t.name));
+                
+                if (uncompletedPrevTasks.length > 0) {
+                    return false; // Są nieukończone zadania z poprzednich kategorii
+                }
+            }
+            
+            return true;
+        }
+
+        // Sprawdź czy zadanie jest ukończone
+        function isTaskCompleted(taskName) {
+            return taskHistory.some(h => 
+                h.projectId === currentProject.id && 
+                h.task === taskName
+            );
+        }
+
+        // Oblicz postęp dnia
+        function calculateDayProgress(day) {
+            const dayTasks = projectTimeline.filter(t => t.day === day);
+            if (dayTasks.length === 0) return 0;
+            
+            const completedTasks = dayTasks.filter(t => isTaskCompleted(t.name));
+            return (completedTasks.length / dayTasks.length) * 100;
+        }
+
+        // Rozpocznij zadanie z kalendarza
+        function startTaskFromCalendar(taskName) {
+            // Znajdź zadanie w kategorii projektu
+            let foundTask = null;
+            let foundCategory = null;
+            
+            Object.entries(currentProject.categories).forEach(([category, tasks]) => {
+                const task = tasks.find(t => t.name === taskName);
+                if (task) {
+                    foundTask = task;
+                    foundCategory = category;
+                }
+            });
+            
+            if (!foundTask) {
+                showNotification('❌ Nie znaleziono zadania', 'error');
+                return;
+            }
+            
+            // Przełącz na tab "Czas"
+            showTab('time');
+            
+            // Ustaw zadanie w selectorze
+            const taskSelect = document.getElementById('taskSelect');
+            taskSelect.value = taskName;
+            
+            // Wywołaj funkcję dodania zadania
+            setTimeout(() => {
+                addNewTask();
+            }, 100);
+            
+            showNotification(`▶️ Przełączono na timer: ${taskName}`, 'info');
+        }
+
+        // Aktualizuj statystyki harmonogramu
+        function updateTimelineStats() {
+            if (!projectTimeline || projectTimeline.length === 0) return;
+
+            const statsContainer = document.getElementById('statsContainer');
+            const totalTasks = projectTimeline.length;
+            const completedTasks = projectTimeline.filter(t => isTaskCompleted(t.name)).length;
+            const totalTime = projectTimeline.reduce((sum, t) => sum + t.estimatedTime, 0);
+            const maxDay = Math.max(...projectTimeline.map(t => t.day));
+            const totalWorkers = Math.max(...projectTimeline.map(t => t.teamSize));
+
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${maxDay}</div>
+                    <div class="stat-label">Dni robocze</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${completedTasks}/${totalTasks}</div>
+                    <div class="stat-label">Ukończone zadania</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${formatTime(totalTime)}</div>
+                    <div class="stat-label">Łączny czas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalWorkers}</div>
+                    <div class="stat-label">Max zespół</div>
+                </div>
+            `;
+        }
+
+        // Pobierz notatki do dnia
+        function getDayNotes(day) {
+            if (!currentProject.dayNotes) return null;
+            return currentProject.dayNotes[day] || null;
+        }
+
+        // Dodaj notatkę do dnia
+        function addDayNote(day) {
+            const currentNote = getDayNotes(day) || '';
+            const newNote = prompt(`Dodaj notatkę do dnia ${day}:`, currentNote);
+            
+            if (newNote !== null) {
+                if (!currentProject.dayNotes) currentProject.dayNotes = {};
+                
+                if (newNote.trim() === '') {
+                    delete currentProject.dayNotes[day];
+                } else {
+                    currentProject.dayNotes[day] = newNote.trim();
+                }
+                
+                createUndoPoint(`${newNote.trim() ? 'Dodanie' : 'Usunięcie'} notatki dzień ${day}`);
+                saveDataSilent();
+                renderTimeline();
+                showNotification(`📝 Notatka dnia ${day} ${newNote.trim() ? 'zapisana' : 'usunięta'}`, 'success');
+            }
+        }
+
+        // Przełącz widok kalendarza
+        function toggleCalendarView() {
+            const btn = document.getElementById('calendarViewBtn');
+            if (calendarView === 'weekly') {
+                calendarView = 'daily';
+                btn.textContent = '📅 Widok dzienny';
+            } else {
+                calendarView = 'weekly';
+                btn.textContent = '📊 Widok tygodniowy';
+            }
+            renderTimeline();
+            showNotification(`📅 Przełączono na ${calendarView === 'weekly' ? 'widok tygodniowy' : 'widok dzienny'}`, 'info');
+        }
+
+        // Zapisz notatki projektu
+        function saveProjectNotes() {
+            const textarea = document.getElementById('projectNotesTextarea');
+            const notes = textarea.value.trim();
+            
+            if (!currentProject.notes) currentProject.notes = {};
+            currentProject.notes.general = notes;
+            
+            createUndoPoint('Zapisanie notatek projektu');
+            saveDataSilent();
+            showNotification('📝 Notatki projektu zapisane', 'success');
+        }
+
+        // Inicjalizuj drag & drop (podstawowa wersja)
+        function initializeDragAndDrop() {
+            // TODO: Implementacja drag & drop w następnej iteracji
+            console.log('Drag & Drop zainicjalizowany');
+        }
+
+        // Edytuj zadanie w harmonogramie
+        function editTaskInTimeline(taskId) {
+            const task = projectTimeline.find(t => t.id == taskId);
+            if (!task) return;
+            
+            const newDay = parseInt(prompt(`Przenieś "${task.name}" na dzień:`, task.day));
+            if (newDay && newDay > 0 && newDay !== task.day) {
+                createUndoPoint(`Przeniesienie zadania "${task.name}" na dzień ${newDay}`);
+                task.day = newDay;
+                
+                // Aktualizuj projekt
+                currentProject.timeline = projectTimeline;
+                saveDataSilent();
+                renderTimeline();
+                updateTimelineStats();
+                
+                showNotification(`📅 Zadanie przeniesione na dzień ${newDay}`, 'success');
+            }
+        }
         setInterval(() => {
             if (activeTasks.length > 0 || projects.length > 0) {
                 saveDataSilent();
